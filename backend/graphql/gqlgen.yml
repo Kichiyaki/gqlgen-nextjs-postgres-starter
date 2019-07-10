@@ -1,0 +1,29 @@
+# .gqlgen.yml example
+#
+# Refer to https://gqlgen.com/config/
+# for detailed .gqlgen.yml documentation.
+
+schema:
+  - "schema/*.graphql"
+exec:
+  filename: generated/generated.go
+  package: generated
+model:
+  filename: generated/models.go
+  package: generated
+resolver:
+  filename: resolvers/resolver.go
+  package: resolvers
+  type: Resolver
+struct_tag: gqlgen
+models:
+  Pagination:
+    model: github.com/kichiyaki/graphql-starter/models.Pagination
+  UserList:
+    model: github.com/kichiyaki/graphql-starter/models.List
+  User:
+    model: github.com/kichiyaki/graphql-starter/models.User
+  UserInput:
+    model: github.com/kichiyaki/graphql-starter/models.UserInput
+  UserFilter:
+    model: github.com/kichiyaki/graphql-starter/models.UserFilter

@@ -1,0 +1,23 @@
+{
+  "presets": ["next/babel"],
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "@": ["."],
+        "alias": {
+          "@common": "./common",
+          "@config": "./config",
+          "@contexts": "./contexts",
+          "@features": "./features",
+          "@graphql": "./graphql",
+          "@hocs": "./hocs",
+          "@lib": "./lib",
+          "@i18n": "./i18n",
+          "@services": "./services",
+          "@utils": "./utils"
+        }
+      }
+    ]
+  ]
+}

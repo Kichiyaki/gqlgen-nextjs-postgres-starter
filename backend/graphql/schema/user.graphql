@@ -1,0 +1,32 @@
+type User {
+  id: Int!
+  slug: String!
+  login: String!
+  role: String!
+  email: String!
+  activated: Boolean!
+  createdAt: Time!
+}
+
+type UserList {
+  total: Int!
+  items: [User!]
+}
+
+input UserInput {
+  login: String
+  password: String
+  email: String
+  role: String
+  activated: Boolean
+}
+
+input UserFilter {
+  id: String
+  login: String
+  role: String
+  email: String
+  onlyActivated: Boolean
+  sort: String
+  sortBy: String
+}
