@@ -3,8 +3,8 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"strings"
 
+	"github.com/kichiyaki/graphql-starter/backend/auth/errors"
 	"github.com/kichiyaki/graphql-starter/backend/middleware"
 
 	"github.com/kichiyaki/graphql-starter/backend/auth"
@@ -30,6 +30,10 @@ func NewAuthUsecase(userRepo user.Repository, tokenRepo token.Repository, e emai
 }
 
 func (ucase *authUsecase) Signup(ctx context.Context, input models.UserInput) (*models.User, error) {
+	if ucase.IsLogged(ctx) {
+		return nil, errors.ErrCannotCreateAccountWhileLoggedIn
+	}
+
 	user := input.ToUser()
 	user.Activated = false
 	user.Role = models.DefaultRole
@@ -46,19 +50,12 @@ func (ucase *authUsecase) Signup(ctx context.Context, input models.UserInput) (*
 
 	err := ucase.userRepo.Store(ctx, user)
 	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique") {
-			if strings.Contains(err.Error(), "login") {
-				return nil, fmt.Errorf("Podany login jest zajęty")
-			} else if strings.Contains(err.Error(), "email") {
-				return nil, fmt.Errorf("Podany email jest zajęty")
-			}
-		}
-		return nil, fmt.Errorf("Wystąpił błąd podczas tworzenia użytkownika")
+		return nil, err
 	}
 
 	token := models.NewToken(models.AccountActivationTokenType, user.ID)
 	if err := ucase.tokenRepo.Store(ctx, token); err != nil {
-		return nil, fmt.Errorf("Nie udało się utworzyć tokenu aktywacyjnego")
+		return nil, errors.ErrActivationTokenCannotBeCreated
 	}
 	go func() {
 		ucase.email.Send(email.
@@ -72,7 +69,18 @@ func (ucase *authUsecase) Signup(ctx context.Context, input models.UserInput) (*
 }
 
 func (ucase *authUsecase) Login(ctx context.Context, login, password string) (*models.User, error) {
+	if ucase.IsLogged(ctx) {
+		return nil, errors.ErrCannotLoginWhileLoggedIn
+	}
+
 	return ucase.userRepo.GetByCredentials(ctx, login, password)
+}
+
+func (ucase *authUsecase) Logout(ctx context.Context) error {
+	if !ucase.IsLogged(ctx) {
+		return errors.ErrNotLoggedIn
+	}
+	return nil
 }
 
 func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*models.User, error) {
@@ -81,7 +89,7 @@ func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*
 		return nil, err
 	}
 	if user.Activated {
-		return nil, fmt.Errorf("Konto zostało już aktywowane")
+		return nil, errors.ErrAccountHasBeenActivated
 	}
 
 	t, err := ucase.tokenRepo.Get(ctx, models.AccountActivationTokenType, token)
@@ -89,12 +97,12 @@ func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*
 		return nil, err
 	}
 	if t.UserID != id {
-		return nil, fmt.Errorf("Niepoprawny token aktywacyjny")
+		return nil, errors.ErrInvalidActivationToken
 	}
 
 	user.Activated = true
 	if err := ucase.userRepo.Update(ctx, user); err != nil {
-		return nil, fmt.Errorf("Wystąpił błąd podczas aktywacji konta")
+		return nil, errors.ErrAccountCannotBeActivated
 	}
 
 	ucase.tokenRepo.DeleteByUserID(ctx, models.AccountActivationTokenType, user.ID)
@@ -108,12 +116,12 @@ func (ucase *authUsecase) GenerateNewActivationToken(ctx context.Context, id int
 		return err
 	}
 	if user.Activated {
-		return fmt.Errorf("Konto zostało już aktywowane")
+		return errors.ErrAccountHasBeenActivated
 	}
 
 	token := models.NewToken(models.AccountActivationTokenType, user.ID)
 	if err := ucase.tokenRepo.Store(ctx, token); err != nil {
-		return fmt.Errorf("Nie udało się utworzyć tokenu aktywacyjnego")
+		return errors.ErrActivationTokenCannotBeCreated
 	}
 	go func() {
 		ucase.email.Send(email.

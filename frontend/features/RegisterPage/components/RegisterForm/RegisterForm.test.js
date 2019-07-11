@@ -13,7 +13,7 @@ import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import registerPageConstants from "../../constants";
-import translations from "@lib/i18n/languages/pl";
+import translations from "@lib/i18n/translations/pl";
 
 const renderPage = (mocks = []) => {
   const client = createClient({ mocks });

@@ -18,12 +18,12 @@ resolver:
 struct_tag: gqlgen
 models:
   Pagination:
-    model: github.com/kichiyaki/graphql-starter/models.Pagination
+    model: github.com/kichiyaki/graphql-starter/backend/models.Pagination
   UserList:
-    model: github.com/kichiyaki/graphql-starter/models.List
+    model: github.com/kichiyaki/graphql-starter/backend/models.List
   User:
-    model: github.com/kichiyaki/graphql-starter/models.User
+    model: github.com/kichiyaki/graphql-starter/backend/models.User
   UserInput:
-    model: github.com/kichiyaki/graphql-starter/models.UserInput
+    model: github.com/kichiyaki/graphql-starter/backend/models.UserInput
   UserFilter:
-    model: github.com/kichiyaki/graphql-starter/models.UserFilter
+    model: github.com/kichiyaki/graphql-starter/backend/models.UserFilter

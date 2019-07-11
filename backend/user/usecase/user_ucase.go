@@ -3,31 +3,41 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"strings"
 
-	"github.com/kichiyaki/graphql-starter/backend/middleware"
+	"github.com/kichiyaki/graphql-starter/backend/auth"
 
 	pgfilter "github.com/kichiyaki/pg-filter"
 	pgpagination "github.com/kichiyaki/pg-pagination"
 	"github.com/kichiyaki/structs"
 	"golang.org/x/crypto/bcrypt"
 
+	_authErrors "github.com/kichiyaki/graphql-starter/backend/auth/errors"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/user"
+	"github.com/kichiyaki/graphql-starter/backend/user/errors"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
 )
 
 type userUsecase struct {
-	userRepo user.Repository
+	userRepo  user.Repository
+	authUcase auth.Usecase
 }
 
-func NewUserUsecase(userRepo user.Repository) user.Usecase {
+func NewUserUsecase(userRepo user.Repository, authUcase auth.Usecase) user.Usecase {
 	return &userUsecase{
 		userRepo,
+		authUcase,
 	}
 }
 
 func (ucase *userUsecase) Store(ctx context.Context, input models.UserInput) (*models.User, error) {
+	if !ucase.authUcase.IsLogged(ctx) {
+		return nil, _authErrors.ErrNotLoggedIn
+	}
+	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
+		return nil, _authErrors.ErrUnauthorized
+	}
+
 	user := input.ToUser()
 
 	cfg := validate.UserValidationConfig{
@@ -41,15 +51,9 @@ func (ucase *userUsecase) Store(ctx context.Context, input models.UserInput) (*m
 	}
 
 	err := ucase.userRepo.Store(ctx, user)
+	fmt.Println(err)
 	if err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique") {
-			if strings.Contains(err.Error(), "login") {
-				return nil, fmt.Errorf("Podany login jest zajęty")
-			} else if strings.Contains(err.Error(), "email") {
-				return nil, fmt.Errorf("Podany email jest zajęty")
-			}
-		}
-		return nil, fmt.Errorf("Wystąpił błąd podczas tworzenia użytkownika")
+		return nil, err
 	}
 
 	return user, nil
@@ -85,19 +89,22 @@ func (ucase *userUsecase) Fetch(ctx context.Context,
 		}
 	}
 
-	list, err := ucase.userRepo.Fetch(ctx,
+	return ucase.userRepo.Fetch(ctx,
 		pgpagination.Pagination{Page: p.Page, Limit: p.Limit},
 		pgfilter.New(m))
-	if err != nil {
-		return nil, fmt.Errorf("Nie udało się wygenerować listy użytkowników")
-	}
-	return list, nil
 }
 
 func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserInput) (*models.User, error) {
+	if !ucase.authUcase.IsLogged(ctx) {
+		return nil, _authErrors.ErrNotLoggedIn
+	}
+	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
+		return nil, _authErrors.ErrUnauthorized
+	}
+
 	user, err := ucase.GetByID(ctx, id)
 	if err != nil || user == nil || user.ID <= 0 {
-		return nil, fmt.Errorf("Nie znaleziono użytkownika o ID: %d", id)
+		return nil, err
 	}
 
 	cfg := validate.UserValidationConfig{}
@@ -121,7 +128,7 @@ func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserI
 		user.Activated = *input.Activated
 	}
 	if somethingToValidate := cfg.IsSomethingToValidate(); !somethingToValidate {
-		return nil, fmt.Errorf("Nie wprowadziłeś żadnych zmian w konfiguracji użytkownika")
+		return nil, errors.ErrNothingChanged
 	}
 	if err := cfg.Validate(*user); err != nil {
 		return nil, err
@@ -133,29 +140,26 @@ func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserI
 	}
 
 	if err := ucase.userRepo.Update(ctx, user); err != nil {
-		if strings.Contains(err.Error(), "duplicate key value violates unique") {
-			if strings.Contains(err.Error(), "login") {
-				return nil, fmt.Errorf("Podany login jest zajęty")
-			} else if strings.Contains(err.Error(), "email") {
-				return nil, fmt.Errorf("Podany email jest zajęty")
-			}
-		}
-		return nil, fmt.Errorf("Nie udało się zaaktualizować użytkownika")
+		return nil, err
 	}
 	return user, nil
 }
 
 func (ucase *userUsecase) Delete(ctx context.Context, ids []int) ([]*models.User, error) {
-	user, _ := middleware.UserFromContext(ctx)
+	if !ucase.authUcase.IsLogged(ctx) {
+		return nil, _authErrors.ErrNotLoggedIn
+	}
+	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
+		return nil, _authErrors.ErrUnauthorized
+	}
+
+	user := ucase.authUcase.CurrentUser(ctx)
+	fmt.Println(user.ID, ids)
 	for _, id := range ids {
 		if id == user.ID {
-			return nil, fmt.Errorf("Nie możesz sam usunąć swojego konta")
+			return nil, errors.ErrUserCannotDeleteHisAccountByHimself
 		}
 	}
 
-	users, err := ucase.userRepo.Delete(ctx, ids)
-	if err != nil {
-		return nil, fmt.Errorf("Nie udało się usunąć kont użytkowników")
-	}
-	return users, nil
+	return ucase.userRepo.Delete(ctx, ids)
 }

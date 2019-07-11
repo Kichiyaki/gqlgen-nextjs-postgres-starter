@@ -2,7 +2,6 @@ type Mutation {
   signup(user: UserInput!): User
   login(login: String!, password: String!): User
   logout: String
-  activateUserAccount(id: Int!, token: String!): User
   generateNewActivationTokenForCurrentUser: String
 
   updateUser(id: Int!, user: UserInput!): User

@@ -4,6 +4,10 @@ import (
 	"github.com/go-pg/pg"
 )
 
+const (
+	DuplicateKeyValueMsg = "duplicate key value violates unique"
+)
+
 type Database struct {
 	*pg.DB
 	cfg *Config

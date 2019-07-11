@@ -64,8 +64,8 @@ func main() {
 		SetPassword(viper.GetString("email.password")).
 		SetURI(viper.GetString("email.uri")))
 
-	userUsecase := _userUsecase.NewUserUsecase(userRepo)
 	authUsecase := _authUsecase.NewAuthUsecase(userRepo, tokenRepo, email)
+	userUsecase := _userUsecase.NewUserUsecase(userRepo, authUsecase)
 
 	cors := handlers.CORS(
 		handlers.AllowedOrigins([]string{"http://localhost:3000", "http://localhost:3001"}),

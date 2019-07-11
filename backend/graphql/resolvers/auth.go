@@ -2,27 +2,21 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/kichiyaki/graphql-starter/backend/middleware"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 )
 
-var (
-	errorNotLogged    = fmt.Errorf("Nie jesteś zalogowany")
-	errorUnauthorized = fmt.Errorf("Brak uprawnień")
-)
-
 func (r *queryResolver) FetchCurrentUser(ctx context.Context) (*models.User, error) {
 	return r.AuthUcase.CurrentUser(ctx), nil
 }
 
-func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*models.User, error) {
-	if r.AuthUcase.IsLogged(ctx) {
-		return nil, fmt.Errorf("Nie możesz utworzyć nowego konta, będąc zalogowanym")
-	}
+func (r *queryResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
+	return r.AuthUcase.Activate(ctx, id, token)
+}
 
+func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*models.User, error) {
 	ginCtx, err := middleware.GinContextFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -40,10 +34,6 @@ func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*
 	return u, nil
 }
 func (r *mutationResolver) Login(ctx context.Context, login string, password string) (*models.User, error) {
-	if r.AuthUcase.IsLogged(ctx) {
-		return nil, fmt.Errorf("Jesteś już zalogowany")
-	}
-
 	ginCtx, err := middleware.GinContextFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -61,10 +51,6 @@ func (r *mutationResolver) Login(ctx context.Context, login string, password str
 	return user, nil
 }
 func (r *mutationResolver) Logout(ctx context.Context) (*string, error) {
-	if !r.AuthUcase.IsLogged(ctx) {
-		return nil, errorNotLogged
-	}
-
 	ginCtx, err := middleware.GinContextFromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -79,15 +65,7 @@ func (r *mutationResolver) Logout(ctx context.Context) (*string, error) {
 	return &msg, nil
 }
 
-func (r *mutationResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
-	return r.AuthUcase.Activate(ctx, id, token)
-}
-
 func (r *mutationResolver) GenerateNewActivationTokenForCurrentUser(ctx context.Context) (*string, error) {
-	if !r.AuthUcase.IsLogged(ctx) {
-		return nil, errorNotLogged
-	}
-
 	if err := r.AuthUcase.GenerateNewActivationToken(ctx, r.AuthUcase.CurrentUser(ctx).ID); err != nil {
 		return nil, err
 	}

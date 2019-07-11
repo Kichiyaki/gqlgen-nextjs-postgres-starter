@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
@@ -10,16 +11,10 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/postgre"
 	"github.com/kichiyaki/graphql-starter/backend/user"
+	"github.com/kichiyaki/graphql-starter/backend/user/errors"
 	pgfilter "github.com/kichiyaki/pg-filter"
 	pgpagination "github.com/kichiyaki/pg-pagination"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	notFoundUserByIDErrorFormat    = "Nie znaleziono użytkownika o ID: %d"
-	notFoundUserBySlugErrorFormat  = "Nie znaleziono użytkownika o slugu: %s"
-	notFoundUserByEmailErrorFormat = "Nie znaleziono użytkownika o adresie email: %s"
-	errInvalidLoginOrPassword      = fmt.Errorf("Niepoprawny login/hasło")
 )
 
 type postgreUserRepo struct {
@@ -36,7 +31,14 @@ func NewPostgreUserRepository(conn *postgre.Database) (user.Repository, error) {
 func (repo *postgreUserRepo) Store(ctx context.Context, u *models.User) error {
 	err := repo.conn.Insert(u)
 	if err != nil {
-		return err
+		if strings.Contains(err.Error(), postgre.DuplicateKeyValueMsg) {
+			if strings.Contains(err.Error(), "login") {
+				return errors.ErrLoginIsOccupied
+			} else if strings.Contains(err.Error(), "email") {
+				return errors.ErrEmailIsOccupied
+			}
+		}
+		return errors.ErrUserCannotBeCreated
 	}
 	s := slug.MakeLang(fmt.Sprintf("%d-%s", u.ID, u.Login), "pl")
 	_, err = repo.
@@ -55,7 +57,7 @@ func (repo *postgreUserRepo) GetByID(ctx context.Context, id int) (*models.User,
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(notFoundUserByIDErrorFormat, id)
+	return nil, fmt.Errorf(errors.NotFoundUserByIDErrFormat, id)
 }
 
 func (repo *postgreUserRepo) GetBySlug(ctx context.Context, slug string) (*models.User, error) {
@@ -64,7 +66,7 @@ func (repo *postgreUserRepo) GetBySlug(ctx context.Context, slug string) (*model
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(notFoundUserBySlugErrorFormat, slug)
+	return nil, fmt.Errorf(errors.NotFoundUserBySlugErrFormat, slug)
 }
 
 func (repo *postgreUserRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
@@ -73,7 +75,7 @@ func (repo *postgreUserRepo) GetByEmail(ctx context.Context, email string) (*mod
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(notFoundUserByEmailErrorFormat, email)
+	return nil, fmt.Errorf(errors.NotFoundUserByEmailErrFormat, email)
 }
 
 func (repo *postgreUserRepo) GetByCredentials(ctx context.Context, login, password string) (*models.User, error) {
@@ -86,11 +88,11 @@ func (repo *postgreUserRepo) GetByCredentials(ctx context.Context, login, passwo
 	if u.ID > 0 {
 		err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 		if err != nil {
-			return u, errInvalidLoginOrPassword
+			return u, errors.ErrInvalidLoginOrPassword
 		}
 		return u, nil
 	}
-	return nil, errInvalidLoginOrPassword
+	return nil, errors.ErrInvalidLoginOrPassword
 }
 
 func (repo *postgreUserRepo) Fetch(ctx context.Context,
@@ -111,7 +113,7 @@ func (repo *postgreUserRepo) Fetch(ctx context.Context,
 
 	count, err := q.Apply(p.Paginate).SelectAndCount()
 	if err != nil && err != pg.ErrNoRows {
-		return nil, err
+		return nil, errors.ErrListOfUsersCannotBeGenerated
 	}
 	list.Items = users
 	list.Total = count
@@ -120,8 +122,26 @@ func (repo *postgreUserRepo) Fetch(ctx context.Context,
 }
 
 func (repo *postgreUserRepo) Update(ctx context.Context, u *models.User) error {
-	_, err := repo.conn.Model(u).WherePK().Returning("*").Update()
-	return err
+	_, err := repo.
+		conn.
+		Model(u).
+		WherePK().
+		Returning("*").
+		Update()
+	if err != nil {
+		if strings.Contains(err.Error(), postgre.DuplicateKeyValueMsg) {
+			if strings.Contains(err.Error(), "login") {
+				return errors.ErrLoginIsOccupied
+			} else if strings.Contains(err.Error(), "email") {
+				return errors.ErrEmailIsOccupied
+			}
+		}
+		if u.Login != "" {
+			return fmt.Errorf(errors.UserCannotBeUpdatedErrFormatWithLogin, u.Login)
+		}
+		return fmt.Errorf(errors.UserCannotBeUpdatedErrFormatWithID, u.ID)
+	}
+	return nil
 }
 
 func (repo *postgreUserRepo) Delete(ctx context.Context, ids []int) ([]*models.User, error) {
@@ -131,6 +151,9 @@ func (repo *postgreUserRepo) Delete(ctx context.Context, ids []int) ([]*models.U
 		Where("id IN (?)", pg.In(ids)).
 		Returning("*").
 		Delete()
+	if err != nil {
+		return nil, errors.ErrUsersCannotBeDeleted
+	}
 
 	return users, err
 }

@@ -44,23 +44,9 @@ func (r *queryResolver) FetchUsers(ctx context.Context, pagination models.Pagina
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, id int, user models.UserInput) (*models.User, error) {
-	if !r.AuthUcase.IsLogged(ctx) {
-		return nil, errorNotLogged
-	}
-	if !r.AuthUcase.HasAdministrativePrivileges(ctx) {
-		return nil, errorUnauthorized
-	}
-
 	return r.UserUcase.Update(ctx, id, user)
 }
 
 func (r *mutationResolver) DeleteUsers(ctx context.Context, ids []int) ([]*models.User, error) {
-	if !r.AuthUcase.IsLogged(ctx) {
-		return nil, errorNotLogged
-	}
-	if !r.AuthUcase.HasAdministrativePrivileges(ctx) {
-		return nil, errorUnauthorized
-	}
-
 	return r.UserUcase.Delete(ctx, ids)
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/seed"
 	"github.com/kichiyaki/graphql-starter/backend/user"
+	"github.com/kichiyaki/graphql-starter/backend/user/errors"
 
 	"github.com/kichiyaki/graphql-starter/backend/postgre"
 	"github.com/stretchr/testify/require"
@@ -32,13 +33,34 @@ func TestPostgreUserRepository(t *testing.T) {
 	users := seed.Users()
 
 	t.Run("STORE / must create user", func(t *testing.T) {
-		user := users[0]
-		err = repo.Store(context.TODO(), &user)
-		require.Equal(t, nil, err)
-		_, err = repo.GetByID(context.TODO(), user.ID)
-		require.Equal(t, nil, err)
-		err = clearUsersTable(conn)
-		require.Equal(t, nil, err)
+		t.Run("login must be unique", func(t *testing.T) {
+			err := seedPostgreDB(repo)
+			require.Equal(t, nil, err)
+			user := users[0]
+			user.ID += 1512
+			err = repo.Store(context.TODO(), &user)
+			require.Equal(t, errors.ErrLoginIsOccupied, err)
+		})
+
+		t.Run("email must be unique", func(t *testing.T) {
+			require.Equal(t, nil, err)
+			user := users[0]
+			user.ID += 1512
+			user.Login += "asd12"
+			err = repo.Store(context.TODO(), &user)
+			require.Equal(t, errors.ErrEmailIsOccupied, err)
+			err = clearUsersTable(conn)
+		})
+
+		t.Run("success", func(t *testing.T) {
+			user := users[0]
+			err = repo.Store(context.TODO(), &user)
+			require.Equal(t, nil, err)
+			_, err = repo.GetByID(context.TODO(), user.ID)
+			require.Equal(t, nil, err)
+			err = clearUsersTable(conn)
+			require.Equal(t, nil, err)
+		})
 	})
 
 	t.Run("GetByID", func(t *testing.T) {
@@ -46,7 +68,7 @@ func TestPostgreUserRepository(t *testing.T) {
 		require.Equal(t, nil, err)
 		t.Run("should return error if user does not exists", func(t *testing.T) {
 			_, err := repo.GetByID(context.TODO(), 1)
-			require.Equal(t, fmt.Errorf(notFoundUserByIDErrorFormat, 1), err)
+			require.Equal(t, fmt.Errorf(errors.NotFoundUserByIDErrFormat, 1), err)
 		})
 
 		t.Run("should return user", func(t *testing.T) {
@@ -59,7 +81,7 @@ func TestPostgreUserRepository(t *testing.T) {
 	t.Run("GetBySlug", func(t *testing.T) {
 		t.Run("should return error if user does not exists", func(t *testing.T) {
 			_, err := repo.GetBySlug(context.TODO(), "asdf")
-			require.Equal(t, fmt.Errorf(notFoundUserBySlugErrorFormat, "asdf"), err)
+			require.Equal(t, fmt.Errorf(errors.NotFoundUserBySlugErrFormat, "asdf"), err)
 		})
 
 		t.Run("should return user", func(t *testing.T) {
@@ -73,7 +95,7 @@ func TestPostgreUserRepository(t *testing.T) {
 		t.Run("should return error if user does not exists", func(t *testing.T) {
 			email := "elówa@gmailo.com"
 			_, err := repo.GetByEmail(context.TODO(), email)
-			require.Equal(t, fmt.Errorf(notFoundUserByEmailErrorFormat, email), err)
+			require.Equal(t, fmt.Errorf(errors.NotFoundUserByEmailErrFormat, email), err)
 		})
 
 		t.Run("should return user", func(t *testing.T) {
@@ -86,12 +108,12 @@ func TestPostgreUserRepository(t *testing.T) {
 	t.Run("GetByCredentials", func(t *testing.T) {
 		t.Run("should return error if password is invalid", func(t *testing.T) {
 			_, err := repo.GetByCredentials(context.TODO(), users[0].Login+"asdasda", users[0].Password)
-			require.Equal(t, errInvalidLoginOrPassword, err)
+			require.Equal(t, errors.ErrInvalidLoginOrPassword, err)
 		})
 
 		t.Run("should return error if password is invalid", func(t *testing.T) {
 			_, err := repo.GetByCredentials(context.TODO(), users[0].Login, "asdasdadsa")
-			require.Equal(t, errInvalidLoginOrPassword, err)
+			require.Equal(t, errors.ErrInvalidLoginOrPassword, err)
 		})
 
 		t.Run("should return user", func(t *testing.T) {
@@ -126,15 +148,33 @@ func TestPostgreUserRepository(t *testing.T) {
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		u := users[0]
-		u.Login = "NewLoginKiszk"
-		err := repo.Update(context.TODO(), &users[0])
-		require.Equal(t, nil, err)
-		err = clearUsersTable(conn)
-		require.Equal(t, nil, err)
+		t.Run("login must be unique", func(t *testing.T) {
+			user := users[0]
+			user.Login = users[1].Login
+			err = repo.Update(context.TODO(), &user)
+			require.Equal(t, errors.ErrLoginIsOccupied, err)
+		})
+
+		t.Run("email must be unique", func(t *testing.T) {
+			user := users[0]
+			user.Login += "asd12"
+			user.Email = users[1].Email
+			err = repo.Update(context.TODO(), &user)
+			require.Equal(t, errors.ErrEmailIsOccupied, err)
+		})
+
+		t.Run("success", func(t *testing.T) {
+			u := users[0]
+			u.Login = "NewLoginKiszk"
+			err := repo.Update(context.TODO(), &users[0])
+			require.Equal(t, nil, err)
+			err = clearUsersTable(conn)
+			require.Equal(t, nil, err)
+		})
+
 	})
 
-	t.Run("Update", func(t *testing.T) {
+	t.Run("Delete", func(t *testing.T) {
 		err := seedPostgreDB(repo)
 		require.Equal(t, nil, err)
 		ids := []int{users[0].ID}

@@ -2,4 +2,5 @@ type Query {
   fetchCurrentUser: User
   fetchUser(id: Int, slug: String): User
   fetchUsers(pagination: Pagination!, filter: UserFilter): UserList
+  activateUserAccount(id: Int!, token: String!): User
 }

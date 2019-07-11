@@ -46,7 +46,6 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
-		ActivateUserAccount                      func(childComplexity int, id int, token string) int
 		DeleteUsers                              func(childComplexity int, ids []int) int
 		GenerateNewActivationTokenForCurrentUser func(childComplexity int) int
 		Login                                    func(childComplexity int, login string, password string) int
@@ -56,9 +55,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		FetchCurrentUser func(childComplexity int) int
-		FetchUser        func(childComplexity int, id *int, slug *string) int
-		FetchUsers       func(childComplexity int, pagination models.Pagination, filter *models.UserFilter) int
+		ActivateUserAccount func(childComplexity int, id int, token string) int
+		FetchCurrentUser    func(childComplexity int) int
+		FetchUser           func(childComplexity int, id *int, slug *string) int
+		FetchUsers          func(childComplexity int, pagination models.Pagination, filter *models.UserFilter) int
 	}
 
 	User struct {
@@ -81,7 +81,6 @@ type MutationResolver interface {
 	Signup(ctx context.Context, user models.UserInput) (*models.User, error)
 	Login(ctx context.Context, login string, password string) (*models.User, error)
 	Logout(ctx context.Context) (*string, error)
-	ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error)
 	GenerateNewActivationTokenForCurrentUser(ctx context.Context) (*string, error)
 	UpdateUser(ctx context.Context, id int, user models.UserInput) (*models.User, error)
 	DeleteUsers(ctx context.Context, ids []int) ([]*models.User, error)
@@ -90,6 +89,7 @@ type QueryResolver interface {
 	FetchCurrentUser(ctx context.Context) (*models.User, error)
 	FetchUser(ctx context.Context, id *int, slug *string) (*models.User, error)
 	FetchUsers(ctx context.Context, pagination models.Pagination, filter *models.UserFilter) (*models.List, error)
+	ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error)
 }
 type UserListResolver interface {
 	Items(ctx context.Context, obj *models.List) ([]*models.User, error)
@@ -109,18 +109,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Mutation.activateUserAccount":
-		if e.complexity.Mutation.ActivateUserAccount == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_activateUserAccount_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.ActivateUserAccount(childComplexity, args["id"].(int), args["token"].(string)), true
 
 	case "Mutation.deleteUsers":
 		if e.complexity.Mutation.DeleteUsers == nil {
@@ -183,6 +171,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateUser(childComplexity, args["id"].(int), args["user"].(models.UserInput)), true
+
+	case "Query.activateUserAccount":
+		if e.complexity.Query.ActivateUserAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Query_activateUserAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ActivateUserAccount(childComplexity, args["id"].(int), args["token"].(string)), true
 
 	case "Query.fetchCurrentUser":
 		if e.complexity.Query.FetchCurrentUser == nil {
@@ -359,7 +359,6 @@ var parsedSchema = gqlparser.MustLoadSchema(
   signup(user: UserInput!): User
   login(login: String!, password: String!): User
   logout: String
-  activateUserAccount(id: Int!, token: String!): User
   generateNewActivationTokenForCurrentUser: String
 
   updateUser(id: Int!, user: UserInput!): User
@@ -375,6 +374,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
   fetchCurrentUser: User
   fetchUser(id: Int, slug: String): User
   fetchUsers(pagination: Pagination!, filter: UserFilter): UserList
+  activateUserAccount(id: Int!, token: String!): User
 }
 `},
 	&ast.Source{Name: "schema/scalars.graphql", Input: `scalar Time
@@ -418,28 +418,6 @@ input UserFilter {
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_activateUserAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 int
-	if tmp, ok := rawArgs["id"]; ok {
-		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["token"]; ok {
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["token"] = arg1
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_deleteUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -481,7 +459,7 @@ func (ec *executionContext) field_Mutation_signup_args(ctx context.Context, rawA
 	args := map[string]interface{}{}
 	var arg0 models.UserInput
 	if tmp, ok := rawArgs["user"]; ok {
-		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserInput(ctx, tmp)
+		arg0, err = ec.unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -503,7 +481,7 @@ func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, 
 	args["id"] = arg0
 	var arg1 models.UserInput
 	if tmp, ok := rawArgs["user"]; ok {
-		arg1, err = ec.unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserInput(ctx, tmp)
+		arg1, err = ec.unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -523,6 +501,28 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_activateUserAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["token"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg1
 	return args, nil
 }
 
@@ -553,7 +553,7 @@ func (ec *executionContext) field_Query_fetchUsers_args(ctx context.Context, raw
 	args := map[string]interface{}{}
 	var arg0 models.Pagination
 	if tmp, ok := rawArgs["pagination"]; ok {
-		arg0, err = ec.unmarshalNPagination2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐPagination(ctx, tmp)
+		arg0, err = ec.unmarshalNPagination2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐPagination(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -561,7 +561,7 @@ func (ec *executionContext) field_Query_fetchUsers_args(ctx context.Context, raw
 	args["pagination"] = arg0
 	var arg1 *models.UserFilter
 	if tmp, ok := rawArgs["filter"]; ok {
-		arg1, err = ec.unmarshalOUserFilter2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserFilter(ctx, tmp)
+		arg1, err = ec.unmarshalOUserFilter2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -630,7 +630,7 @@ func (ec *executionContext) _Mutation_signup(ctx context.Context, field graphql.
 	res := resTmp.(*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -661,7 +661,7 @@ func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.C
 	res := resTmp.(*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -686,37 +686,6 @@ func (ec *executionContext) _Mutation_logout(ctx context.Context, field graphql.
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Mutation_activateUserAccount(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
-	ctx = ec.Tracer.StartFieldExecution(ctx, field)
-	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
-	rctx := &graphql.ResolverContext{
-		Object:   "Mutation",
-		Field:    field,
-		Args:     nil,
-		IsMethod: true,
-	}
-	ctx = graphql.WithResolverContext(ctx, rctx)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_activateUserAccount_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	rctx.Args = args
-	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
-	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ActivateUserAccount(rctx, args["id"].(int), args["token"].(string))
-	})
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*models.User)
-	rctx.Result = res
-	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_generateNewActivationTokenForCurrentUser(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -771,7 +740,7 @@ func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field grap
 	res := resTmp.(*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_deleteUsers(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -802,7 +771,7 @@ func (ec *executionContext) _Mutation_deleteUsers(ctx context.Context, field gra
 	res := resTmp.([]*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_fetchCurrentUser(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -826,7 +795,7 @@ func (ec *executionContext) _Query_fetchCurrentUser(ctx context.Context, field g
 	res := resTmp.(*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_fetchUser(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -857,7 +826,7 @@ func (ec *executionContext) _Query_fetchUser(ctx context.Context, field graphql.
 	res := resTmp.(*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_fetchUsers(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -888,7 +857,38 @@ func (ec *executionContext) _Query_fetchUsers(ctx context.Context, field graphql
 	res := resTmp.(*models.List)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUserList2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐList(ctx, field.Selections, res)
+	return ec.marshalOUserList2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐList(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_activateUserAccount(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_activateUserAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ActivateUserAccount(rctx, args["id"].(int), args["token"].(string))
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.User)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -1183,7 +1183,7 @@ func (ec *executionContext) _UserList_items(ctx context.Context, field graphql.C
 	res := resTmp.([]*models.User)
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
-	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) graphql.Marshaler {
@@ -2166,8 +2166,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_login(ctx, field)
 		case "logout":
 			out.Values[i] = ec._Mutation_logout(ctx, field)
-		case "activateUserAccount":
-			out.Values[i] = ec._Mutation_activateUserAccount(ctx, field)
 		case "generateNewActivationTokenForCurrentUser":
 			out.Values[i] = ec._Mutation_generateNewActivationTokenForCurrentUser(ctx, field)
 		case "updateUser":
@@ -2231,6 +2229,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_fetchUsers(ctx, field)
+				return res
+			})
+		case "activateUserAccount":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_activateUserAccount(ctx, field)
 				return res
 			})
 		case "__type":
@@ -2616,7 +2625,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) unmarshalNPagination2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐPagination(ctx context.Context, v interface{}) (models.Pagination, error) {
+func (ec *executionContext) unmarshalNPagination2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐPagination(ctx context.Context, v interface{}) (models.Pagination, error) {
 	return ec.unmarshalInputPagination(ctx, v)
 }
 
@@ -2648,11 +2657,11 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalNUser2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		if !ec.HasError(graphql.GetResolverContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -2662,7 +2671,7 @@ func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphql�
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserInput(ctx context.Context, v interface{}) (models.UserInput, error) {
+func (ec *executionContext) unmarshalNUserInput2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserInput(ctx context.Context, v interface{}) (models.UserInput, error) {
 	return ec.unmarshalInputUserInput(ctx, v)
 }
 
@@ -2993,11 +3002,11 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return ec.marshalOString2string(ctx, sel, *v)
 }
 
-func (ec *executionContext) marshalOUser2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {
 	return ec._User(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v []*models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v []*models.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -3024,7 +3033,7 @@ func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphq
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx, sel, v[i])
+			ret[i] = ec.marshalNUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3037,30 +3046,30 @@ func (ec *executionContext) marshalOUser2ᚕᚖgithubᚗcomᚋkichiyakiᚋgraphq
 	return ret
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v *models.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOUserFilter2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserFilter(ctx context.Context, v interface{}) (models.UserFilter, error) {
+func (ec *executionContext) unmarshalOUserFilter2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserFilter(ctx context.Context, v interface{}) (models.UserFilter, error) {
 	return ec.unmarshalInputUserFilter(ctx, v)
 }
 
-func (ec *executionContext) unmarshalOUserFilter2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserFilter(ctx context.Context, v interface{}) (*models.UserFilter, error) {
+func (ec *executionContext) unmarshalOUserFilter2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserFilter(ctx context.Context, v interface{}) (*models.UserFilter, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalOUserFilter2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐUserFilter(ctx, v)
+	res, err := ec.unmarshalOUserFilter2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUserFilter(ctx, v)
 	return &res, err
 }
 
-func (ec *executionContext) marshalOUserList2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐList(ctx context.Context, sel ast.SelectionSet, v models.List) graphql.Marshaler {
+func (ec *executionContext) marshalOUserList2githubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐList(ctx context.Context, sel ast.SelectionSet, v models.List) graphql.Marshaler {
 	return ec._UserList(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalOUserList2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋmodelsᚐList(ctx context.Context, sel ast.SelectionSet, v *models.List) graphql.Marshaler {
+func (ec *executionContext) marshalOUserList2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐList(ctx context.Context, sel ast.SelectionSet, v *models.List) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}

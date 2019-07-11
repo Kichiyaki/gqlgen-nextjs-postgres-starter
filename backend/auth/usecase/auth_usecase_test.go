@@ -5,11 +5,15 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/kichiyaki/graphql-starter/backend/middleware"
+
 	"github.com/google/uuid"
+	_authErrors "github.com/kichiyaki/graphql-starter/backend/auth/errors"
 	_emailMock "github.com/kichiyaki/graphql-starter/backend/email/mocks"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/seed"
 	_tokenMocks "github.com/kichiyaki/graphql-starter/backend/token/mocks"
+	_userErrors "github.com/kichiyaki/graphql-starter/backend/user/errors"
 	"github.com/kichiyaki/graphql-starter/backend/user/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -28,16 +32,22 @@ func TestSignup(t *testing.T) {
 		Email:    &mockUser.Email,
 	}
 
+	t.Run("user cannot be logged in", func(t *testing.T) {
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		_, err := usecase.Signup(middleware.StoreUserInContext(context.Background(), mockUser), mockInput)
+		require.Equal(t, _authErrors.ErrCannotCreateAccountWhileLoggedIn, err)
+	})
+
 	t.Run("login is occupied ", func(t *testing.T) {
 		mockUserRepo.
 			On("Store",
 				mock.Anything,
 				mock.AnythingOfType("*models.User")).
-			Return(fmt.Errorf("duplicate key value violates unique login")).
+			Return(_userErrors.ErrLoginIsOccupied).
 			Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		_, err := usecase.Signup(context.TODO(), mockInput)
-		require.Equal(t, "Podany login jest zajęty", err.Error())
+		require.Equal(t, _userErrors.ErrLoginIsOccupied, err)
 	})
 
 	t.Run("email is occupied ", func(t *testing.T) {
@@ -45,11 +55,11 @@ func TestSignup(t *testing.T) {
 			On("Store",
 				mock.Anything,
 				mock.AnythingOfType("*models.User")).
-			Return(fmt.Errorf("duplicate key value violates unique email")).
+			Return(_userErrors.ErrEmailIsOccupied).
 			Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		_, err := usecase.Signup(context.TODO(), mockInput)
-		require.Equal(t, "Podany email jest zajęty", err.Error())
+		require.Equal(t, _userErrors.ErrEmailIsOccupied, err)
 	})
 
 	t.Run("token cannot be created", func(t *testing.T) {
@@ -57,7 +67,7 @@ func TestSignup(t *testing.T) {
 		mockTokenRepo.On("Store", mock.Anything, mock.Anything).Return(fmt.Errorf("Error")).Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		_, err := usecase.Signup(context.TODO(), mockInput)
-		require.Equal(t, "Nie udało się utworzyć tokenu aktywacyjnego", err.Error())
+		require.Equal(t, _authErrors.ErrActivationTokenCannotBeCreated, err)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -69,6 +79,47 @@ func TestSignup(t *testing.T) {
 		require.Equal(t, nil, err)
 		require.Equal(t, mockUser.Login, user.Login)
 		require.Equal(t, mockUser.Email, user.Email)
+	})
+}
+
+func TestLogin(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	mockUser := &seed.Users()[0]
+
+	t.Run("user cannot be logged in", func(t *testing.T) {
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		_, err := usecase.Login(middleware.StoreUserInContext(context.Background(), mockUser), mockUser.Login, mockUser.Password)
+		require.Equal(t, _authErrors.ErrCannotLoginWhileLoggedIn, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockUserRepo.On("GetByCredentials", mock.Anything, mockUser.Login, mockUser.Password).Return(mockUser, nil).Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		user, err := usecase.Login(context.Background(), mockUser.Login, mockUser.Password)
+		require.Equal(t, nil, err)
+		require.Equal(t, user.Login, mockUser.Login)
+	})
+}
+
+func TestLogout(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	mockUser := &seed.Users()[0]
+
+	t.Run("user cannot be logged out", func(t *testing.T) {
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.Logout(context.Background())
+		require.Equal(t, _authErrors.ErrNotLoggedIn, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.Logout(middleware.StoreUserInContext(context.Background(), mockUser))
+		require.Equal(t, nil, err)
 	})
 }
 
@@ -90,7 +141,7 @@ func TestActivate(t *testing.T) {
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		token := uuid.New().String()
 		_, err := usecase.Activate(context.TODO(), id, token)
-		require.Equal(t, "Konto zostało już aktywowane", err.Error())
+		require.Equal(t, _authErrors.ErrAccountHasBeenActivated, err)
 	})
 
 	t.Run("wrong user id", func(t *testing.T) {
@@ -113,7 +164,7 @@ func TestActivate(t *testing.T) {
 			Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		_, err := usecase.Activate(context.TODO(), id, tok.Value)
-		require.Equal(t, "Niepoprawny token aktywacyjny", err.Error())
+		require.Equal(t, _authErrors.ErrInvalidActivationToken, err)
 	})
 
 	t.Run("cannot update user", func(t *testing.T) {
@@ -140,7 +191,7 @@ func TestActivate(t *testing.T) {
 			Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		_, err := usecase.Activate(context.TODO(), id, tok.Value)
-		require.Equal(t, "Wystąpił błąd podczas aktywacji konta", err.Error())
+		require.Equal(t, _authErrors.ErrAccountCannotBeActivated, err)
 	})
 
 	t.Run("success", func(t *testing.T) {
@@ -197,7 +248,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 			Once()
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		err := usecase.GenerateNewActivationToken(context.TODO(), id)
-		require.Equal(t, "Konto zostało już aktywowane", err.Error())
+		require.Equal(t, _authErrors.ErrAccountHasBeenActivated, err)
 	})
 
 	t.Run("cannot create token", func(t *testing.T) {
@@ -217,7 +268,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		err := usecase.GenerateNewActivationToken(context.TODO(), id)
-		require.Equal(t, "Nie udało się utworzyć tokenu aktywacyjnego", err.Error())
+		require.Equal(t, _authErrors.ErrActivationTokenCannotBeCreated, err)
 	})
 
 	t.Run("success", func(t *testing.T) {
