@@ -14,7 +14,7 @@ import { testID } from "@common/Form/TextField/constants";
 import registerPageConstants from "../../constants";
 import translations from "@lib/i18n/translations/pl";
 
-const renderPage = (mocks = []) => {
+const renderLoginForm = (mocks = []) => {
   const client = createClient({ mocks });
   return {
     ...render(
@@ -31,7 +31,7 @@ const renderPage = (mocks = []) => {
 
 describe("LoginForm", () => {
   test("login and password are required", async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
 
     getAllByTestId(testID).forEach(el => {
       fireEvent.change(el, { target: { value: "" } });
@@ -53,7 +53,7 @@ describe("LoginForm", () => {
   test(`length of username should be between ${
     constants.VALIDATION.minimumLengthOfLogin
   } and ${constants.VALIDATION.maximumLengthOfLogin} characters`, async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
     let value = "as";
 
     getAllByTestId(testID).forEach(el => {
@@ -102,7 +102,7 @@ describe("LoginForm", () => {
   } and ${
     constants.VALIDATION.maximumLengthOfPassword
   } characters`, async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
     let value = "asasd";
 
     getAllByTestId(testID).forEach(el => {
@@ -151,7 +151,7 @@ describe("LoginForm", () => {
   });
 
   test("password must contains min. 1 lowercase", async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
 
     getAllByTestId(testID).forEach(el => {
       if (el.id === registerPageConstants.PASSWORD) {
@@ -171,7 +171,7 @@ describe("LoginForm", () => {
   });
 
   test("password must contains min. 1 uppercase", async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
 
     getAllByTestId(testID).forEach(el => {
       if (el.id === registerPageConstants.PASSWORD) {
@@ -191,7 +191,7 @@ describe("LoginForm", () => {
   });
 
   test("password must contains min. 1 digit", async () => {
-    const { getAllByTestId, getByText } = renderPage();
+    const { getAllByTestId, getByText } = renderLoginForm();
 
     getAllByTestId(testID).forEach(el => {
       if (el.id === registerPageConstants.PASSWORD) {
@@ -249,7 +249,7 @@ describe("LoginForm", () => {
       getByDisplayValue,
       getByTestId,
       getByText
-    } = renderPage(mocks);
+    } = renderLoginForm(mocks);
 
     getAllByTestId(testID).forEach(el => {
       fireEvent.change(el, { target: { value: user[el.id] } });

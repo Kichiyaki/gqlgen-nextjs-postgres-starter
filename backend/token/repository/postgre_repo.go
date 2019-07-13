@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	pgfilter "github.com/kichiyaki/pg-filter"
+
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/kichiyaki/graphql-starter/backend/models"
@@ -12,7 +14,7 @@ import (
 )
 
 var (
-	notFoundTokenByValueErrorFormat = "Nie znaleziono tokenu: %s"
+	errCannotGenerateSliceOfToken = fmt.Errorf("Nie znaleziono żadnego tokenu")
 )
 
 type postgreTokenRepo struct {
@@ -30,13 +32,18 @@ func (repo *postgreTokenRepo) Store(ctx context.Context, t *models.Token) error 
 	return repo.conn.Insert(t)
 }
 
-func (repo *postgreTokenRepo) Get(ctx context.Context, t, value string) (*models.Token, error) {
-	token := &models.Token{}
-	repo.conn.Model(token).Where("type = ?", t).Where("value = ?", value).First()
-	if token.ID > 0 {
-		return token, nil
+func (repo *postgreTokenRepo) Fetch(ctx context.Context, f *pgfilter.Filter) ([]*models.Token, error) {
+	tokens := []*models.Token{}
+	query := repo.conn.Model(&tokens)
+	if f != nil {
+		query = query.Apply(f.Filter)
 	}
-	return nil, fmt.Errorf(notFoundTokenByValueErrorFormat, value)
+	err := query.Select()
+	if err != nil && err != pg.ErrNoRows {
+		fmt.Println(err)
+		return nil, errCannotGenerateSliceOfToken
+	}
+	return tokens, nil
 }
 
 func (repo *postgreTokenRepo) Delete(ctx context.Context, ids []int) ([]*models.Token, error) {

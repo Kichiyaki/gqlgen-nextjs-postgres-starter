@@ -66,10 +66,14 @@ func (r *mutationResolver) Logout(ctx context.Context) (*string, error) {
 }
 
 func (r *mutationResolver) GenerateNewActivationTokenForCurrentUser(ctx context.Context) (*string, error) {
-	if err := r.AuthUcase.GenerateNewActivationToken(ctx, r.AuthUcase.CurrentUser(ctx).ID); err != nil {
+	if err := r.AuthUcase.GenerateNewActivationTokenForCurrentUser(ctx); err != nil {
 		return nil, err
 	}
 
 	msg := "Pomyślnie wygenerowano"
 	return &msg, nil
+}
+
+func (r *mutationResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
+	return r.AuthUcase.Activate(ctx, id, token)
 }

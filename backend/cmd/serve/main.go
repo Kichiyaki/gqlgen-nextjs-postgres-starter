@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/robfig/cron"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,7 @@ import (
 	_graphqlHandler "github.com/kichiyaki/graphql-starter/backend/graphql/delivery/http"
 	_middleware "github.com/kichiyaki/graphql-starter/backend/middleware"
 	"github.com/kichiyaki/graphql-starter/backend/postgre"
+	_tokenCron "github.com/kichiyaki/graphql-starter/backend/token/cron"
 	_tokenRepo "github.com/kichiyaki/graphql-starter/backend/token/repository"
 	_userRepo "github.com/kichiyaki/graphql-starter/backend/user/repository"
 	_userUsecase "github.com/kichiyaki/graphql-starter/backend/user/usecase"
@@ -67,6 +70,14 @@ func main() {
 	authUsecase := _authUsecase.NewAuthUsecase(userRepo, tokenRepo, email)
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, authUsecase)
 
+	c := cron.New()
+	defer c.Stop()
+	_tokenCron.InitTokenCron(c, tokenRepo)
+
+	go func() {
+		c.Start()
+	}()
+
 	cors := handlers.CORS(
 		handlers.AllowedOrigins([]string{"http://localhost:3000", "http://localhost:3001"}),
 		handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"}),
@@ -99,9 +110,9 @@ func main() {
 		}
 	}()
 
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
-	<-c
+	channel := make(chan os.Signal, 1)
+	signal.Notify(channel, os.Interrupt, os.Kill, syscall.SIGTERM, syscall.SIGINT)
+	<-channel
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

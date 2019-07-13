@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	pgfilter "github.com/kichiyaki/pg-filter"
+
 	"github.com/kichiyaki/graphql-starter/backend/auth/errors"
 	"github.com/kichiyaki/graphql-starter/backend/middleware"
 
@@ -13,6 +15,10 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/token"
 	"github.com/kichiyaki/graphql-starter/backend/user"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
+)
+
+const (
+	limitOfActivationTokens = 3
 )
 
 type authUsecase struct {
@@ -92,11 +98,16 @@ func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*
 		return nil, errors.ErrAccountHasBeenActivated
 	}
 
-	t, err := ucase.tokenRepo.Get(ctx, models.AccountActivationTokenType, token)
+	filter := &models.TokenFilter{
+		Type:   models.AccountActivationTokenType,
+		Value:  token,
+		UserID: fmt.Sprint(id),
+	}
+	tokens, err := ucase.tokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
 	if err != nil {
 		return nil, err
 	}
-	if t.UserID != id {
+	if len(tokens) == 0 {
 		return nil, errors.ErrInvalidActivationToken
 	}
 
@@ -105,7 +116,21 @@ func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*
 		return nil, errors.ErrAccountCannotBeActivated
 	}
 
-	ucase.tokenRepo.DeleteByUserID(ctx, models.AccountActivationTokenType, user.ID)
+	go func() {
+		filter := &models.TokenFilter{
+			Type:   models.AccountActivationTokenType,
+			UserID: fmt.Sprint(id),
+		}
+		ctx := context.Background()
+		tokens, err := ucase.tokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
+		if len(tokens) > 0 && err == nil {
+			ids := []int{}
+			for _, token := range tokens {
+				ids = append(ids, token.ID)
+			}
+			ucase.tokenRepo.Delete(ctx, ids)
+		}
+	}()
 
 	return user, nil
 }
@@ -117,6 +142,17 @@ func (ucase *authUsecase) GenerateNewActivationToken(ctx context.Context, id int
 	}
 	if user.Activated {
 		return errors.ErrAccountHasBeenActivated
+	}
+	filter := &models.TokenFilter{
+		Type:   models.AccountActivationTokenType,
+		UserID: fmt.Sprint(id),
+	}
+	tokens, err := ucase.tokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
+	if err != nil {
+		return err
+	}
+	if len(tokens) > limitOfActivationTokens {
+		return errors.ErrReachedLimitOfActivationTokens
 	}
 
 	token := models.NewToken(models.AccountActivationTokenType, user.ID)
@@ -132,6 +168,13 @@ func (ucase *authUsecase) GenerateNewActivationToken(ctx context.Context, id int
 	}()
 
 	return nil
+}
+
+func (ucase *authUsecase) GenerateNewActivationTokenForCurrentUser(ctx context.Context) error {
+	if !ucase.IsLogged(ctx) {
+		return errors.ErrNotLoggedIn
+	}
+	return ucase.GenerateNewActivationToken(ctx, ucase.CurrentUser(ctx).ID)
 }
 
 func (ucase *authUsecase) IsLogged(ctx context.Context) bool {

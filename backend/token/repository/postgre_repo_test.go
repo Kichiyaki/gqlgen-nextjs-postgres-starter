@@ -2,9 +2,11 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"testing"
+	"time"
+
+	pgfilter "github.com/kichiyaki/pg-filter"
 
 	"github.com/go-pg/pg/orm"
 	"github.com/kichiyaki/graphql-starter/backend/models"
@@ -25,31 +27,33 @@ func TestPostgreRepo(t *testing.T) {
 	require.Equal(t, nil, err)
 	tokens := seed.Tokens()
 
-	t.Run("STORE", func(t *testing.T) {
+	t.Run("Store", func(t *testing.T) {
 		err := repo.Store(context.Background(), &tokens[0])
 		require.Equal(t, nil, err)
-		token, err := repo.Get(context.Background(), tokens[0].Type, tokens[0].Value)
+		filter := &models.TokenFilter{
+			CreatedAt: "gt__" + time.Now().Format("2006-01-02 15:04:05"),
+			Type:      tokens[0].Type,
+			Value:     tokens[0].Value,
+		}
+		ts, err := repo.Fetch(context.Background(), pgfilter.New(filter.ToMap()))
 		require.Equal(t, nil, err)
-		require.Equal(t, tokens[0].ID, token.ID)
+		require.Equal(t, 1, len(ts))
+		require.Equal(t, tokens[0].ID, ts[0].ID)
 		clearTokensTable(conn)
 	})
 
-	t.Run("Get", func(t *testing.T) {
+	t.Run("Fetch", func(t *testing.T) {
 		seedPostgreDB(repo)
-		t.Run("invalid token value", func(t *testing.T) {
-			value := tokens[0].Value + "asdasda"
-			_, err := repo.Get(context.Background(), tokens[0].Type, value)
-			require.Equal(t, fmt.Errorf(notFoundTokenByValueErrorFormat, value), err)
-		})
-		t.Run("invalid type", func(t *testing.T) {
-			_, err := repo.Get(context.Background(), tokens[0].Type+"asdasda", tokens[0].Value)
-			require.Equal(t, fmt.Errorf(notFoundTokenByValueErrorFormat, tokens[0].Value), err)
-		})
-		t.Run("success", func(t *testing.T) {
-			token, err := repo.Get(context.Background(), tokens[0].Type, tokens[0].Value)
-			require.Equal(t, nil, err)
-			require.Equal(t, tokens[0].ID, token.ID)
-		})
+		filter := &models.TokenFilter{
+			CreatedAt: "gt__" + time.Now().Add(-2*time.Hour).Format("2006-01-02 15:04:05"),
+			Type:      tokens[0].Type,
+			Value:     tokens[0].Value,
+		}
+
+		ts, err := repo.Fetch(context.Background(), pgfilter.New(filter.ToMap()))
+		require.Equal(t, nil, err)
+		require.Equal(t, 1, len(ts))
+		require.Equal(t, tokens[0].ID, ts[0].ID)
 	})
 
 	t.Run("Delete", func(t *testing.T) {

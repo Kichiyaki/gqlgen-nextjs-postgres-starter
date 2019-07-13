@@ -24,7 +24,8 @@ const LoginFormCmp = ({
   handleSubmit,
   handleChange,
   handleBlur,
-  translations
+  translations,
+  isSubmitting
 }) => {
   const classes = useStyles();
   return (
@@ -72,6 +73,7 @@ const LoginFormCmp = ({
         variant="contained"
         color="primary"
         className={classes.button}
+        disabled={isSubmitting}
       >
         {translations.REGISTER_PAGE.loginForm.submitButton}
       </Button>

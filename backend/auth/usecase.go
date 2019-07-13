@@ -12,6 +12,7 @@ type Usecase interface {
 	Logout(ctx context.Context) error
 	Activate(ctx context.Context, id int, token string) (*models.User, error)
 	GenerateNewActivationToken(ctx context.Context, id int) error
+	GenerateNewActivationTokenForCurrentUser(ctx context.Context) error
 	IsLogged(ctx context.Context) bool
 	HasAdministrativePrivileges(ctx context.Context) bool
 	CurrentUser(ctx context.Context) *models.User

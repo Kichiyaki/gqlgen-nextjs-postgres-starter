@@ -17,7 +17,13 @@ export default {
   ROUTES: {
     root: "/",
     login: "/login",
-    register: "/register"
+    register: "/register",
+    userPage: {
+      settingsPage: {
+        accountActivation: "/user/settings/activate",
+        changePassword: "/user/settings/change-password"
+      }
+    }
   },
   AUTHOR_FULL_NAME: "Dawid Wysokiński"
 };

@@ -144,29 +144,6 @@ func TestActivate(t *testing.T) {
 		require.Equal(t, _authErrors.ErrAccountHasBeenActivated, err)
 	})
 
-	t.Run("wrong user id", func(t *testing.T) {
-		id := users[1].ID
-		tok := tokens[0]
-		tok.Type = "asdf"
-		tok.UserID += 153
-		mockUserRepo.
-			On("GetByID",
-				mock.Anything,
-				id).
-			Return(&users[1], nil).
-			Once()
-		mockTokenRepo.
-			On("Get",
-				mock.Anything,
-				models.AccountActivationTokenType,
-				tok.Value).
-			Return(&tok, nil).
-			Once()
-		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
-		_, err := usecase.Activate(context.TODO(), id, tok.Value)
-		require.Equal(t, _authErrors.ErrInvalidActivationToken, err)
-	})
-
 	t.Run("cannot update user", func(t *testing.T) {
 		id := users[1].ID
 		tok := tokens[0]
@@ -177,11 +154,10 @@ func TestActivate(t *testing.T) {
 			Return(&users[1], nil).
 			Once()
 		mockTokenRepo.
-			On("Get",
+			On("Fetch",
 				mock.Anything,
-				models.AccountActivationTokenType,
-				tok.Value).
-			Return(&tok, nil).
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{&tok}, nil).
 			Once()
 		mockUserRepo.
 			On("Update",
@@ -205,17 +181,21 @@ func TestActivate(t *testing.T) {
 			Return(&users[1], nil).
 			Once()
 		mockTokenRepo.
-			On("Get",
+			On("Fetch",
 				mock.Anything,
-				models.AccountActivationTokenType,
-				tok.Value).
-			Return(&tok, nil).
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{&tok}, nil).
 			Once()
 		mockTokenRepo.
-			On("DeleteByUserID",
+			On("Delete",
 				mock.Anything,
-				models.AccountActivationTokenType,
-				id).
+				[]int{id}).
+			Return([]*models.Token{&tok}, nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
 			Return([]*models.Token{&tok}, nil).
 			Once()
 		mockUserRepo.
@@ -251,6 +231,32 @@ func TestGenerateNewActivationToken(t *testing.T) {
 		require.Equal(t, _authErrors.ErrAccountHasBeenActivated, err)
 	})
 
+	t.Run("the token limit has been reached", func(t *testing.T) {
+		id := users[1].ID
+		tokens := seed.Tokens()
+		fetchedTokens := []*models.Token{}
+		for i := 0; i < limitOfActivationTokens+1; i++ {
+			token := tokens[0]
+			fetchedTokens = append(fetchedTokens, &token)
+		}
+		mockUserRepo.
+			On("GetByID",
+				mock.Anything,
+				id).
+			Return(&users[1], nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return(fetchedTokens, nil).
+			Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.GenerateNewActivationToken(context.TODO(), id)
+		require.Equal(t, _authErrors.ErrReachedLimitOfActivationTokens, err)
+	})
+
 	t.Run("cannot create token", func(t *testing.T) {
 		id := users[1].ID
 		mockUserRepo.
@@ -259,6 +265,11 @@ func TestGenerateNewActivationToken(t *testing.T) {
 				id).
 			Return(&users[1], nil).
 			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil)
 		mockTokenRepo.
 			On("Store",
 				mock.Anything,
@@ -279,6 +290,11 @@ func TestGenerateNewActivationToken(t *testing.T) {
 				id).
 			Return(&users[1], nil).
 			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil)
 		mockTokenRepo.
 			On("Store",
 				mock.Anything,

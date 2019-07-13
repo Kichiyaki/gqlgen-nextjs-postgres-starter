@@ -11,4 +11,5 @@ var (
 	ErrUnauthorized                     = fmt.Errorf("Brak uprawnień")
 	ErrCannotCreateAccountWhileLoggedIn = fmt.Errorf("Nie możesz utworzyć nowego konta, będąc zalogowanym")
 	ErrCannotLoginWhileLoggedIn         = fmt.Errorf("Jesteś już zalogowany")
+	ErrReachedLimitOfActivationTokens   = fmt.Errorf("Osiągnąłeś limit wygenerowanych tokenów aktywacyjnych, prosimy spróbować później")
 )

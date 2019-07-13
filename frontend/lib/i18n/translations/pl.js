@@ -3,6 +3,15 @@ import constants from "@config/constants";
 export default {
   APPLICATION: {
     name: "GraphQL Starter",
+    header: {
+      logout: {
+        success: "Pomyślnie się wylogowałeś",
+        error: "Nie udało Ci się wylogować, prosimy spróbować jeszcze raz"
+      },
+      buttons: {
+        logout: "Wyloguj się"
+      }
+    },
     footer: {
       links: {
         mainPage: "Strona główna",
@@ -21,6 +30,49 @@ export default {
         return `${currentYear} ${
           constants.AUTHOR_FULL_NAME
         }. All rights reserved.`;
+      }
+    }
+  },
+  USER_ACCOUNT_ACTIVATION_PAGE: {
+    errors: {
+      default:
+        "Wystąpił błąd podczas aktywacji konta, prosimy spróbować później"
+    },
+    success: login => `Konto ${login} zostało pomyślnie zaaktywowane`
+  },
+  USER_PAGE: {
+    SETTINGS_PAGE: {
+      navigation: {
+        settings: "Ustawienia",
+        accountActivation: "Aktywacja konta",
+        changePassword: "Zmień hasło"
+      },
+      ACCOUNT_ACTIVATION_PAGE: {
+        title: "Aktywacja konta",
+        activateAccount: "Aktywuj konto",
+        activateAccountForm: {
+          errors: {
+            validation: {
+              mustProvideToken: "Musisz wprowadzić token",
+              tokenIsInvalid: "Wprowadziłeś niepoprawny token"
+            },
+            default:
+              "Nie udało się zaaktywować konta, prosimy spróbować później"
+          },
+          inputLabels: {
+            token: "Token"
+          },
+          success: "Konto zostało pomyślnie zaaktywowane",
+          submitButton: "Aktywuj konto"
+        },
+        generateNewActivationTokenForm: {
+          errors: {
+            default:
+              "Nie udało się wygenerować nowego tokena aktywacyjnego, prosimy spróbować później"
+          },
+          success: "Token aktywacyjny został wysłany na konto email",
+          submitButton: "Wygeneruj nowy token aktywacyjny"
+        }
       }
     }
   },

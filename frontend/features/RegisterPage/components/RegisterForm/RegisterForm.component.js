@@ -24,7 +24,8 @@ const RegisterFormCmp = ({
   handleSubmit,
   handleChange,
   handleBlur,
-  translations
+  translations,
+  isSubmitting
 }) => {
   const classes = useStyles();
   return (
@@ -106,6 +107,7 @@ const RegisterFormCmp = ({
         variant="contained"
         color="primary"
         className={classes.button}
+        disabled={isSubmitting}
       >
         {translations.REGISTER_PAGE.registerForm.submitButton}
       </Button>

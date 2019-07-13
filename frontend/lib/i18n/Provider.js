@@ -1,6 +1,6 @@
 import React from "react";
 import Context from "./context";
-import plTranslation from "./languages/pl";
+import plTranslation from "./translations/pl";
 import { node, string as propString } from "prop-types";
 
 const Provider = ({ children, locale }) => {

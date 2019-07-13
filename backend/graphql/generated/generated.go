@@ -46,6 +46,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Mutation struct {
+		ActivateUserAccount                      func(childComplexity int, id int, token string) int
 		DeleteUsers                              func(childComplexity int, ids []int) int
 		GenerateNewActivationTokenForCurrentUser func(childComplexity int) int
 		Login                                    func(childComplexity int, login string, password string) int
@@ -82,6 +83,7 @@ type MutationResolver interface {
 	Login(ctx context.Context, login string, password string) (*models.User, error)
 	Logout(ctx context.Context) (*string, error)
 	GenerateNewActivationTokenForCurrentUser(ctx context.Context) (*string, error)
+	ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error)
 	UpdateUser(ctx context.Context, id int, user models.UserInput) (*models.User, error)
 	DeleteUsers(ctx context.Context, ids []int) ([]*models.User, error)
 }
@@ -109,6 +111,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Mutation.activateUserAccount":
+		if e.complexity.Mutation.ActivateUserAccount == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_activateUserAccount_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ActivateUserAccount(childComplexity, args["id"].(int), args["token"].(string)), true
 
 	case "Mutation.deleteUsers":
 		if e.complexity.Mutation.DeleteUsers == nil {
@@ -360,6 +374,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
   login(login: String!, password: String!): User
   logout: String
   generateNewActivationTokenForCurrentUser: String
+  activateUserAccount(id: Int!, token: String!): User
 
   updateUser(id: Int!, user: UserInput!): User
   deleteUsers(ids: [Int!]): [User!]
@@ -417,6 +432,28 @@ input UserFilter {
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_activateUserAccount_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["token"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg1
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_deleteUsers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -710,6 +747,37 @@ func (ec *executionContext) _Mutation_generateNewActivationTokenForCurrentUser(c
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_activateUserAccount(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_activateUserAccount_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ActivateUserAccount(rctx, args["id"].(int), args["token"].(string))
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.User)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -2168,6 +2236,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_logout(ctx, field)
 		case "generateNewActivationTokenForCurrentUser":
 			out.Values[i] = ec._Mutation_generateNewActivationTokenForCurrentUser(ctx, field)
+		case "activateUserAccount":
+			out.Values[i] = ec._Mutation_activateUserAccount(ctx, field)
 		case "updateUser":
 			out.Values[i] = ec._Mutation_updateUser(ctx, field)
 		case "deleteUsers":

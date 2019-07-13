@@ -12,6 +12,7 @@
           "@features": "./features",
           "@graphql": "./graphql",
           "@hocs": "./hocs",
+          "@hooks": "./hooks",
           "@lib": "./lib",
           "@i18n": "./i18n",
           "@services": "./services",

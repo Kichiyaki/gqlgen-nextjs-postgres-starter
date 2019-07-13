@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kichiyaki/graphql-starter/backend/models"
+	pgfilter "github.com/kichiyaki/pg-filter"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -24,21 +25,21 @@ func (_m *Repository) Store(ctx context.Context, u *models.Token) error {
 	return r0
 }
 
-func (_m *Repository) Get(ctx context.Context, t, value string) (*models.Token, error) {
-	ret := _m.Called(ctx, t, value)
+func (_m *Repository) Fetch(ctx context.Context, f *pgfilter.Filter) ([]*models.Token, error) {
+	ret := _m.Called(ctx, f)
 
-	var r0 *models.Token
-	if rf, ok := ret.Get(0).(func(context.Context, string, string) *models.Token); ok {
-		r0 = rf(ctx, t, value)
+	var r0 []*models.Token
+	if rf, ok := ret.Get(0).(func(context.Context, *pgfilter.Filter) []*models.Token); ok {
+		r0 = rf(ctx, f)
 	} else {
 		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*models.Token)
+			r0 = ret.Get(0).([]*models.Token)
 		}
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, string, string) error); ok {
-		r1 = rf(ctx, t, value)
+	if rf, ok := ret.Get(1).(func(context.Context, *pgfilter.Filter) error); ok {
+		r1 = rf(ctx, f)
 	} else {
 		r1 = ret.Error(1)
 	}

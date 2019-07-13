@@ -10,7 +10,11 @@ const ssrMode = !process.browser;
 
 export default (client, options = { getDataFromTree: "ssr" }) => App => {
   const Apollo = props => {
-    const ref = useRef(initApollo(client, props.apolloState));
+    const ref = useRef(
+      initApollo(client, {
+        initialState: props.apolloState.data
+      })
+    );
     return <App {...props} apollo={ref.current} />;
   };
 

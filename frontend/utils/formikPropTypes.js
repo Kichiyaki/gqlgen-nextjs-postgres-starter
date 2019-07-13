@@ -12,5 +12,6 @@ export default {
   setFieldValue: func.isRequired,
   setSubmitting: func.isRequired,
   setTouched: func.isRequired,
-  setValues: func.isRequired
+  setValues: func.isRequired,
+  isSubmitting: bool.isRequired
 };
