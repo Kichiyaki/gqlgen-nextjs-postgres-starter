@@ -1,5 +1,5 @@
 import React from "react";
-import { object } from "prop-types";
+import { func } from "prop-types";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 
@@ -24,19 +24,10 @@ const ActivateAccountFormCmp = ({
   handleSubmit,
   handleChange,
   handleBlur,
-  translations,
+  t,
   isSubmitting
 }) => {
   const classes = useStyles();
-  const {
-    USER_PAGE: {
-      SETTINGS_PAGE: {
-        ACCOUNT_ACTIVATION_PAGE: {
-          activateAccountForm: { inputLabels, submitButton }
-        }
-      }
-    }
-  } = translations;
   return (
     <form
       onSubmit={handleSubmit}
@@ -50,7 +41,7 @@ const ActivateAccountFormCmp = ({
         required
         fullWidth
         id={constants.TOKEN}
-        label={inputLabels.token}
+        label={t("activateAccountForm.inputLabels.token")}
         name={constants.TOKEN}
         autoComplete={constants.TOKEN}
         autoFocus
@@ -68,14 +59,14 @@ const ActivateAccountFormCmp = ({
         className={classes.button}
         disabled={isSubmitting}
       >
-        {submitButton}
+        {t("activateAccountForm.submitButton")}
       </Button>
     </form>
   );
 };
 
 ActivateAccountFormCmp.propTypes = {
-  translations: object.isRequired,
+  t: func.isRequired,
   ...formikPropTypes
 };
 

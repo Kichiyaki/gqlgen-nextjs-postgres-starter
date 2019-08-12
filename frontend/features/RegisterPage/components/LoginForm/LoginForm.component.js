@@ -1,5 +1,5 @@
 import React from "react";
-import { object } from "prop-types";
+import { func } from "prop-types";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import formikPropTypes from "@utils/formikPropTypes";
@@ -24,7 +24,7 @@ const LoginFormCmp = ({
   handleSubmit,
   handleChange,
   handleBlur,
-  translations,
+  t,
   isSubmitting
 }) => {
   const classes = useStyles();
@@ -41,7 +41,7 @@ const LoginFormCmp = ({
         required
         fullWidth
         id={constants.LOGIN}
-        label={translations.REGISTER_PAGE.registerForm.inputLabels.login}
+        label={t("registerForm.inputLabels.login")}
         name={constants.LOGIN}
         autoComplete={constants.LOGIN}
         autoFocus
@@ -57,7 +57,7 @@ const LoginFormCmp = ({
         required
         fullWidth
         name={constants.PASSWORD}
-        label={translations.REGISTER_PAGE.registerForm.inputLabels.password}
+        label={t("registerForm.inputLabels.password")}
         type={constants.PASSWORD}
         id={constants.PASSWORD}
         autoComplete={constants.CURRENT_PASSWORD}
@@ -75,14 +75,14 @@ const LoginFormCmp = ({
         className={classes.button}
         disabled={isSubmitting}
       >
-        {translations.REGISTER_PAGE.loginForm.submitButton}
+        {t("loginForm.submitButton")}
       </Button>
     </form>
   );
 };
 
 LoginFormCmp.propTypes = {
-  translations: object.isRequired,
+  t: func.isRequired,
   ...formikPropTypes
 };
 

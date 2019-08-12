@@ -1,3 +1,3 @@
 export {
-  default as UserOptionsAccountActivationPage
+  default as UserSettingsAccountActivationPage
 } from "./features/AccountActivationPage/AccountActivationPage";

@@ -1,0 +1,24 @@
+{
+  "APPLICATION": {
+    "name": "GraphQL Starter"
+  },
+  "HEADER": {
+    "logout": {
+      "success": "Pomyślnie się wylogowałeś",
+      "error": "Nie udało się wylogować, prosimy spróbować później"
+    },
+    "buttons": {
+      "logout": "Wyloguj"
+    }
+  },
+  "FOOTER": {
+    "links": {
+      "mainPage": "Strona główna",
+      "registration": "Rejestracja",
+      "login": "Logowanie",
+      "termsOfUse": "Regulamin",
+      "aboutAuthor": "O autorze"
+    },
+    "copyright": "{{year}} {{fullName}}. All rights reserved."
+  }
+}

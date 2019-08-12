@@ -1,8 +1,9 @@
-import React, { useContext } from "react";
+import React from "react";
+import { func } from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Link from "./components/Link/Link";
-import I18NContext from "@lib/i18n/context";
+import { withTranslation } from "@lib/i18n/i18n";
 import constants from "@config/constants";
 
 const useStyles = makeStyles(theme => ({
@@ -31,28 +32,35 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const AppFooter = () => {
+const AppFooter = ({ t }) => {
   const classes = useStyles();
-  const {
-    APPLICATION: { footer }
-  } = useContext(I18NContext);
 
   return (
     <footer className={classes.footer}>
       <div className={classes.navContainer}>
-        <Link href={constants.ROUTES.root}>{footer.links.mainPage}</Link>
+        <Link href={constants.ROUTES.root}>{t("FOOTER.links.mainPage")}</Link>
         <Link href={constants.ROUTES.register}>
-          {footer.links.registration}
+          {t("FOOTER.links.registration")}
         </Link>
-        <Link href={constants.ROUTES.login}>{footer.links.login}</Link>
-        <Link href={constants.ROUTES.root}>{footer.links.rules}</Link>
-        <Link href={constants.ROUTES.root}>{footer.links.aboutAuthor}</Link>
+        <Link href={constants.ROUTES.login}>{t("FOOTER.links.login")}</Link>
+        <Link href={constants.ROUTES.root}>{t("FOOTER.links.termsOfUse")}</Link>
+        <Link href={constants.ROUTES.root}>
+          {t("FOOTER.links.aboutAuthor")}
+        </Link>
       </div>
       <p className={classes.copyright}>
-        &copy; {footer.copyright(new Date().getFullYear())}
+        &copy;{" "}
+        {t("FOOTER.copyright", {
+          year: new Date().getFullYear(),
+          fullName: constants.AUTHOR_FULL_NAME
+        })}
       </p>
     </footer>
   );
 };
 
-export default AppFooter;
+AppFooter.propTypes = {
+  t: func.isRequired
+};
+
+export default withTranslation(constants.NAMESPACES.common)(AppFooter);

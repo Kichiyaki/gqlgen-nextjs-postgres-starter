@@ -14,11 +14,19 @@ const withCurrentUser = WrappedComponent => {
       fetchPolicy: "network-only"
     });
 
+    if (ctx.req) {
+      console.log(
+        ctx.req.i18n.services.resourceStore.data["pl"][
+          "user-page/reset-password-page"
+        ]
+      );
+    }
+
     if (WrappedComponent.getInitialProps) {
       pageProps = await WrappedComponent.getInitialProps(ctx);
     }
 
-    return { pageProps };
+    return pageProps;
   };
 
   return WithCurrentUser;

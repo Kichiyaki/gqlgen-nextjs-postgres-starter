@@ -5,5 +5,6 @@ export default {
   PASSWORD_CONFIRMATION: "passwordConfirmation",
   CURRENT_PASSWORD: "currentPassword",
   REGISTER_FORM: "register-form",
-  LOGIN_FORM: "login-form"
+  LOGIN_FORM: "login-form",
+  NAMESPACE: "register-page"
 };

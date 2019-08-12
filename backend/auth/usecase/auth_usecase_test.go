@@ -144,6 +144,26 @@ func TestActivate(t *testing.T) {
 		require.Equal(t, _authErrors.ErrAccountHasBeenActivated, err)
 	})
 
+	t.Run("no token found", func(t *testing.T) {
+		id := users[1].ID
+		tok := tokens[0]
+		mockUserRepo.
+			On("GetByID",
+				mock.Anything,
+				id).
+			Return(&users[1], nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil).
+			Once()
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		_, err := usecase.Activate(context.TODO(), id, tok.Value)
+		require.Equal(t, _authErrors.ErrInvalidActivationToken, err)
+	})
+
 	t.Run("cannot update user", func(t *testing.T) {
 		id := users[1].ID
 		tok := tokens[0]
@@ -308,6 +328,181 @@ func TestGenerateNewActivationToken(t *testing.T) {
 
 		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
 		err := usecase.GenerateNewActivationToken(context.TODO(), id)
+		require.Equal(t, nil, err)
+	})
+}
+
+func TestGenerateNewResetPasswordToken(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	users := seed.Users()
+	email := users[0].Email
+
+	t.Run("the token limit has been reached", func(t *testing.T) {
+		tokens := seed.Tokens()
+		fetchedTokens := []*models.Token{}
+		for i := 0; i < limitOfActivationTokens+1; i++ {
+			token := tokens[0]
+			fetchedTokens = append(fetchedTokens, &token)
+		}
+		mockUserRepo.
+			On("GetByEmail",
+				mock.Anything,
+				email).
+			Return(&users[1], nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return(fetchedTokens, nil).
+			Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.GenerateNewResetPasswordToken(context.TODO(), email)
+		require.Equal(t, _authErrors.ErrReachedLimitOfResetPasswordTokens, err)
+	})
+
+	t.Run("cannot create token", func(t *testing.T) {
+		mockUserRepo.
+			On("GetByEmail",
+				mock.Anything,
+				email).
+			Return(&users[1], nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil)
+		mockTokenRepo.
+			On("Store",
+				mock.Anything,
+				mock.AnythingOfType("*models.Token")).
+			Return(fmt.Errorf("Error")).
+			Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.GenerateNewResetPasswordToken(context.TODO(), email)
+		require.Equal(t, _authErrors.ErrResetPasswordTokenCannotBeCreated, err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockUserRepo.
+			On("GetByEmail",
+				mock.Anything,
+				email).
+			Return(&users[1], nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil)
+		mockTokenRepo.
+			On("Store",
+				mock.Anything,
+				mock.AnythingOfType("*models.Token")).
+			Return(nil).
+			Once()
+		mockEmail.
+			On("Send", mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.GenerateNewResetPasswordToken(context.TODO(), email)
+		require.Equal(t, nil, err)
+	})
+}
+
+func TestResetPassword(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	users := seed.Users()
+	tokens := seed.Tokens()
+	id := users[0].ID
+
+	t.Run("no token found", func(t *testing.T) {
+		tok := tokens[1]
+		user := users[0]
+		mockUserRepo.
+			On("GetByID",
+				mock.Anything,
+				id).
+			Return(&user, nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{}, nil).
+			Once()
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.ResetPassword(context.TODO(), id, tok.Value)
+		require.Equal(t, _authErrors.ErrInvalidResetPasswordToken, err)
+	})
+
+	t.Run("cannot update user", func(t *testing.T) {
+		tok := tokens[1]
+		user := users[0]
+		mockUserRepo.
+			On("GetByID",
+				mock.Anything,
+				id).
+			Return(&user, nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{&tok}, nil).
+			Once()
+		mockUserRepo.
+			On("Update",
+				mock.Anything,
+				mock.AnythingOfType("*models.User")).
+			Return(fmt.Errorf("error")).
+			Once()
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.ResetPassword(context.TODO(), id, tok.Value)
+		require.Equal(t, fmt.Errorf(_userErrors.UserCannotBeUpdatedErrFormatWithLogin, user.Login), err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		tok := tokens[1]
+		user := users[0]
+		mockUserRepo.
+			On("GetByID",
+				mock.Anything,
+				id).
+			Return(&user, nil).
+			Once()
+		mockTokenRepo.
+			On("Fetch",
+				mock.Anything,
+				mock.AnythingOfType("*pgfilter.Filter")).
+			Return([]*models.Token{&tok}, nil).
+			Once()
+		mockUserRepo.
+			On("Update",
+				mock.Anything,
+				mock.AnythingOfType("*models.User")).
+			Return(nil).
+			Once()
+		mockTokenRepo.
+			On("Delete", mock.Anything, []int{tok.ID}).
+			Return([]*models.Token{&tok}, nil).
+			Once()
+		mockEmail.
+			On("Send", mock.Anything, mock.Anything).
+			Return(nil).
+			Once()
+
+		usecase := NewAuthUsecase(mockUserRepo, mockTokenRepo, mockEmail)
+		err := usecase.ResetPassword(context.TODO(), id, tok.Value)
 		require.Equal(t, nil, err)
 	})
 }

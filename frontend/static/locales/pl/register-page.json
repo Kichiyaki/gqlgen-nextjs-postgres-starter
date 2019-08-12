@@ -1,0 +1,61 @@
+{
+  "registerForm": {
+    "errors": {
+      "validation": {
+        "mustProvideLogin": "Musisz wprowadzić login.",
+        "mustProvidePassword": "Musisz wprowadzić hasło.",
+        "mustProvideEmail": "Musisz wprowadzić adres email.",
+        "minimumLengthOfPassword": "Minimalna długość hasła to {{characters}} znak.",
+        "minimumLengthOfPassword_plural": "Minimalna długość hasła to {{characters}} znaki.",
+        "maximumLengthOfPassword": "Maksymalna długość hasła to {{characters}} znak.",
+        "maximumLengthOfPassword_plural": "Maksymalna długość hasła to {{characters}} znaki.",
+        "minimumLengthOfLogin": "Minimalna długość loginu to {{characters}} znak.",
+        "minimumLengthOfLogin_plural": "Minimalna długość loginu to {{characters}} znaki.",
+        "maximumLengthOfLogin": "Maksymalna długość loginu to {{characters}} znaki.",
+        "maximumLengthOfLogin_plural": "Maksymalna długość loginu to {{characters}} znak.",
+        "invalidEmail": "Wprowadziłeś niepoprawny adres email.",
+        "passwordMustContainOneUppercase": "Hasło musi zawierać conajmniej jedną wielką literę.",
+        "passwordMustContainOneLowercase": "Hasło musi zawierać conajmniej jedną małą literę.",
+        "passwordMustContainOneDigit": "Hasło musi zawierać conajmniej jedną cyfre.",
+        "passwordsAreNotTheSame": "Hasła nie są takie same."
+      },
+      "default": "Wystąpił błąd podczas rejestracji, prosimy spróbować później."
+    },
+    "inputLabels": {
+      "login": "Login",
+      "email": "Adres email",
+      "password": "Hasło",
+      "passwordConfirmation": "Powtórz hasło"
+    },
+    "submitButton": "Zarejestruj się",
+    "success": "Rejestracja przebiegła pomyślnie."
+  },
+  "loginForm": {
+    "errors": {
+      "default": "Wystąpił błąd podczas logowania, prosimy spróbować później."
+    },
+    "submitButton": "Zaloguj się",
+    "success": "Logowanie przebiegło pomyślnie."
+  },
+  "signup": "Rejestracja",
+  "signin": "Logowanie",
+  "forgottenPassword": "Zapomniałeś hasła?",
+  "alreadyHaveAnAccount": "Posiadasz już konto? Zaloguj się.",
+  "dontHaveAnAccount": "Nie posiadasz jeszcze konta? Zarejestruj się.",
+  "resetPasswordModal": {
+    "title": "Resetowanie hasła",
+    "submitButton": "Zresetuj hasło",
+    "errors": {
+      "validation": {
+        "invalidEmail": "{{email}} jest niepoprawnym adresem email.",
+        "mustProvideEmail": "Musisz wprowadzić adres email."
+      },
+      "default": "Nie udało się wygenerować tokenu do resetu hasła. Prosimy spróbować później."
+    },
+    "inputLabels": {
+      "email": "Adres email"
+    },
+    "success": "Na podany adres email zostały wysłane dalsze instrukcje.",
+    "cancel": "Anuluj"
+  }
+}

@@ -13,5 +13,11 @@ func Tokens() []models.Token {
 			UserID: users[1].ID,
 			Type:   models.AccountActivationTokenType,
 		},
+		models.Token{
+			ID:     341,
+			Value:  "token2",
+			UserID: users[0].ID,
+			Type:   models.ResetPasswordTokenType,
+		},
 	}
 }

@@ -4,6 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kichiyaki/graphql-starter/backend/sessions"
+
+	"github.com/sethvargo/go-password/password"
+	"golang.org/x/crypto/bcrypt"
+
 	pgfilter "github.com/kichiyaki/pg-filter"
 
 	"github.com/kichiyaki/graphql-starter/backend/auth/errors"
@@ -14,24 +19,28 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/token"
 	"github.com/kichiyaki/graphql-starter/backend/user"
+	_userErrors "github.com/kichiyaki/graphql-starter/backend/user/errors"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
 )
 
 const (
-	limitOfActivationTokens = 3
+	limitOfActivationTokens    = 3
+	limitOfResetPasswordTokens = 3
 )
 
 type authUsecase struct {
 	userRepo  user.Repository
 	tokenRepo token.Repository
 	email     email.Email
+	sessStore sessions.Store
 }
 
-func NewAuthUsecase(userRepo user.Repository, tokenRepo token.Repository, e email.Email) auth.Usecase {
+func NewAuthUsecase(userRepo user.Repository, tokenRepo token.Repository, e email.Email, sessStore sessions.Store) auth.Usecase {
 	return &authUsecase{
 		userRepo,
 		tokenRepo,
 		e,
+		sessStore,
 	}
 }
 
@@ -175,6 +184,98 @@ func (ucase *authUsecase) GenerateNewActivationTokenForCurrentUser(ctx context.C
 		return errors.ErrNotLoggedIn
 	}
 	return ucase.GenerateNewActivationToken(ctx, ucase.CurrentUser(ctx).ID)
+}
+
+func (ucase *authUsecase) GenerateNewResetPasswordToken(ctx context.Context, emailAddress string) error {
+	user, err := ucase.userRepo.GetByEmail(ctx, emailAddress)
+	if err != nil {
+		return err
+	}
+	filter := &models.TokenFilter{
+		Type:   models.ResetPasswordTokenType,
+		UserID: fmt.Sprint(user.ID),
+	}
+	tokens, err := ucase.tokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
+	if err != nil {
+		return err
+	}
+	if len(tokens) > limitOfResetPasswordTokens {
+		return errors.ErrReachedLimitOfResetPasswordTokens
+	}
+
+	token := models.NewToken(models.ResetPasswordTokenType, user.ID)
+	if err := ucase.tokenRepo.Store(ctx, token); err != nil {
+		return errors.ErrResetPasswordTokenCannotBeCreated
+	}
+	go func() {
+		ucase.email.Send(email.
+			NewEmailConfig().
+			SetTo([]string{user.Email}).
+			SetBody(fmt.Sprintf("<p>Token: %s</p>", token.Value)).
+			SetSubject("Token do zmiany hasła"))
+	}()
+
+	return nil
+}
+
+func (ucase *authUsecase) ResetPassword(ctx context.Context, id int, token string) error {
+	user, err := ucase.userRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	filter := &models.TokenFilter{
+		Type:   models.ResetPasswordTokenType,
+		Value:  token,
+		UserID: fmt.Sprint(id),
+	}
+	tokens, err := ucase.tokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
+	if err != nil {
+		return err
+	}
+	if len(tokens) == 0 {
+		return errors.ErrInvalidResetPasswordToken
+	}
+	password, err := password.Generate(32, 6, 6, false, true)
+	if err != nil {
+		return errors.ErrCannotGeneratePassword
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return errors.ErrCannotGeneratePassword
+	}
+	user.Password = string(hashedPassword)
+	if err := ucase.userRepo.Update(ctx, user); err != nil {
+		return fmt.Errorf(_userErrors.UserCannotBeUpdatedErrFormatWithLogin, user.Login)
+	}
+	go func() {
+		ucase.tokenRepo.Delete(ctx, []int{tokens[0].ID})
+	}()
+	go func() {
+		ucase.email.Send(email.
+			NewEmailConfig().
+			SetTo([]string{user.Email}).
+			SetBody(fmt.Sprintf("<p>Nowe hasło: %s</p>", password)).
+			SetSubject("Nowe hasło"))
+	}()
+	go func() {
+		sess, _ := ucase.sessStore.GetAll()
+		ids := []string{}
+		for _, session := range sess {
+			v := session.Values["user"]
+			if v != nil {
+				id, ok := v.(float64)
+				userID := int(id)
+				if ok {
+					if userID == user.ID {
+						ids = append(ids, session.ID)
+					}
+				}
+			}
+		}
+		ucase.sessStore.DeleteByID(ids...)
+	}()
+
+	return nil
 }
 
 func (ucase *authUsecase) IsLogged(ctx context.Context) bool {

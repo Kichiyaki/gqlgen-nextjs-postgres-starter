@@ -84,7 +84,7 @@ const restrictionWrapper = ({
       pageProps = await WrappedComponent.getInitialProps(ctx);
     }
 
-    return { pageProps };
+    return pageProps;
   };
 
   return RestrictionWrapper;

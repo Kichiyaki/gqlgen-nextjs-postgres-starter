@@ -1,5 +1,5 @@
 import React from "react";
-import { object } from "prop-types";
+import { func } from "prop-types";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import formikPropTypes from "@utils/formikPropTypes";
@@ -24,7 +24,7 @@ const RegisterFormCmp = ({
   handleSubmit,
   handleChange,
   handleBlur,
-  translations,
+  t,
   isSubmitting
 }) => {
   const classes = useStyles();
@@ -41,7 +41,7 @@ const RegisterFormCmp = ({
         required
         fullWidth
         id={constants.LOGIN}
-        label={translations.REGISTER_PAGE.registerForm.inputLabels.login}
+        label={t("registerForm.inputLabels.login")}
         name={constants.LOGIN}
         autoComplete={constants.LOGIN}
         autoFocus
@@ -57,7 +57,7 @@ const RegisterFormCmp = ({
         required
         fullWidth
         id={constants.EMAIL}
-        label={translations.REGISTER_PAGE.registerForm.inputLabels.email}
+        label={t("registerForm.inputLabels.email")}
         name={constants.EMAIL}
         autoComplete={constants.EMAIL}
         value={values.email}
@@ -72,7 +72,7 @@ const RegisterFormCmp = ({
         required
         fullWidth
         name={constants.PASSWORD}
-        label={translations.REGISTER_PAGE.registerForm.inputLabels.password}
+        label={t("registerForm.inputLabels.password")}
         type={constants.PASSWORD}
         id={constants.PASSWORD}
         autoComplete={constants.CURRENT_PASSWORD}
@@ -88,10 +88,7 @@ const RegisterFormCmp = ({
         required
         fullWidth
         name={constants.PASSWORD_CONFIRMATION}
-        label={
-          translations.REGISTER_PAGE.registerForm.inputLabels
-            .passwordConfirmation
-        }
+        label={t("registerForm.inputLabels.passwordConfirmation")}
         type={constants.PASSWORD}
         id={constants.PASSWORD_CONFIRMATION}
         autoComplete={constants.CURRENT_PASSWORD}
@@ -109,14 +106,14 @@ const RegisterFormCmp = ({
         className={classes.button}
         disabled={isSubmitting}
       >
-        {translations.REGISTER_PAGE.registerForm.submitButton}
+        {t("registerForm.submitButton")}
       </Button>
     </form>
   );
 };
 
 RegisterFormCmp.propTypes = {
-  translations: object.isRequired,
+  t: func.isRequired,
   ...formikPropTypes
 };
 

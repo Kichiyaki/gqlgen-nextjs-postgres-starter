@@ -3,7 +3,7 @@ import React from "react";
 import App, { Container } from "next/app";
 import { ToastContainer } from "react-toastify";
 import withApollo from "../hocs/withApollo";
-import TranslationProvider from "../lib/i18n/Provider";
+import { appWithTranslation } from "../lib/i18n/i18n";
 import ApolloProvider from "../common/ApolloProvider/ApolloProvider";
 
 class MyApp extends App {
@@ -26,13 +26,10 @@ class MyApp extends App {
 
   render() {
     const { Component, pageProps, apollo } = this.props;
-
     return (
       <Container>
         <ApolloProvider client={apollo}>
-          <TranslationProvider locale="pl">
-            <Component {...pageProps} />
-          </TranslationProvider>
+          <Component {...pageProps} />
         </ApolloProvider>
         <ToastContainer />
       </Container>
@@ -40,4 +37,4 @@ class MyApp extends App {
   }
 }
 
-export default withApollo(MyApp);
+export default withApollo(appWithTranslation(MyApp));

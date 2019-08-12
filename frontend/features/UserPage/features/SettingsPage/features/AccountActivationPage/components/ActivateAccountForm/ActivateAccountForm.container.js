@@ -2,7 +2,7 @@ import React from "react";
 import { useMutation, useApolloClient } from "@apollo/react-hooks";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { object } from "prop-types";
+import { func } from "prop-types";
 import isUUID from "validator/lib/isUUID";
 
 import ActivateAccountFormCmp from "./ActivateAccountForm.component";
@@ -10,16 +10,11 @@ import { ACTIVATE_USER_ACCOUNT_MUTATION } from "../../mutations";
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 
-const ActivateAccountForm = ({ translations }) => {
+const ActivateAccountForm = ({ t }) => {
   const [activateUserAccountMutation] = useMutation(
     ACTIVATE_USER_ACCOUNT_MUTATION
   );
   const client = useApolloClient();
-  const {
-    USER_PAGE: {
-      SETTINGS_PAGE: { ACCOUNT_ACTIVATION_PAGE }
-    }
-  } = translations;
 
   const handleSubmit = async ({ token }, { resetForm, setSubmitting }) => {
     try {
@@ -41,14 +36,12 @@ const ActivateAccountForm = ({ translations }) => {
         }
       });
       resetForm();
-      showSuccessMessage(ACCOUNT_ACTIVATION_PAGE.activateAccountForm.success);
+      showSuccessMessage(t("activateAccountForm.success"));
     } catch (error) {
       if (error.graphQLErrors && error.graphQLErrors[0]) {
         showErrorMessage(error.graphQLErrors[0].message);
       } else {
-        showErrorMessage(
-          ACCOUNT_ACTIVATION_PAGE.activateAccountForm.errors.default
-        );
+        showErrorMessage(t("activateAccountForm.errors.default"));
       }
     }
     setSubmitting(false);
@@ -58,21 +51,15 @@ const ActivateAccountForm = ({ translations }) => {
       initialValues={{
         token: ""
       }}
-      render={formikProps => (
-        <ActivateAccountFormCmp {...formikProps} translations={translations} />
-      )}
+      render={formikProps => <ActivateAccountFormCmp {...formikProps} t={t} />}
       onSubmit={handleSubmit}
       validationSchema={Yup.object().shape({
         token: Yup.string()
           .trim()
-          .required(
-            ACCOUNT_ACTIVATION_PAGE.activateAccountForm.errors.validation
-              .mustProvideToken
-          )
+          .required(t("activateAccountForm.errors.validation.mustProvideToken"))
           .test(
             "is-uuid",
-            ACCOUNT_ACTIVATION_PAGE.activateAccountForm.errors.validation
-              .tokenIsInvalid,
+            t("activateAccountForm.errors.validation.tokenIsInvalid"),
             val => !val || isUUID(val)
           )
       })}
@@ -81,7 +68,7 @@ const ActivateAccountForm = ({ translations }) => {
 };
 
 ActivateAccountForm.propTypes = {
-  translations: object.isRequired
+  t: func.isRequired
 };
 
 export default ActivateAccountForm;

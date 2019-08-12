@@ -49,6 +49,7 @@ type ComplexityRoot struct {
 		ActivateUserAccount                      func(childComplexity int, id int, token string) int
 		DeleteUsers                              func(childComplexity int, ids []int) int
 		GenerateNewActivationTokenForCurrentUser func(childComplexity int) int
+		GenerateNewResetPasswordToken            func(childComplexity int, email string) int
 		Login                                    func(childComplexity int, login string, password string) int
 		Logout                                   func(childComplexity int) int
 		Signup                                   func(childComplexity int, user models.UserInput) int
@@ -60,6 +61,7 @@ type ComplexityRoot struct {
 		FetchCurrentUser    func(childComplexity int) int
 		FetchUser           func(childComplexity int, id *int, slug *string) int
 		FetchUsers          func(childComplexity int, pagination models.Pagination, filter *models.UserFilter) int
+		ResetPassword       func(childComplexity int, id int, token string) int
 	}
 
 	User struct {
@@ -84,6 +86,7 @@ type MutationResolver interface {
 	Logout(ctx context.Context) (*string, error)
 	GenerateNewActivationTokenForCurrentUser(ctx context.Context) (*string, error)
 	ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error)
+	GenerateNewResetPasswordToken(ctx context.Context, email string) (*string, error)
 	UpdateUser(ctx context.Context, id int, user models.UserInput) (*models.User, error)
 	DeleteUsers(ctx context.Context, ids []int) ([]*models.User, error)
 }
@@ -92,6 +95,7 @@ type QueryResolver interface {
 	FetchUser(ctx context.Context, id *int, slug *string) (*models.User, error)
 	FetchUsers(ctx context.Context, pagination models.Pagination, filter *models.UserFilter) (*models.List, error)
 	ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error)
+	ResetPassword(ctx context.Context, id int, token string) (*string, error)
 }
 type UserListResolver interface {
 	Items(ctx context.Context, obj *models.List) ([]*models.User, error)
@@ -142,6 +146,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.GenerateNewActivationTokenForCurrentUser(childComplexity), true
+
+	case "Mutation.generateNewResetPasswordToken":
+		if e.complexity.Mutation.GenerateNewResetPasswordToken == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_generateNewResetPasswordToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.GenerateNewResetPasswordToken(childComplexity, args["email"].(string)), true
 
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
@@ -228,6 +244,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.FetchUsers(childComplexity, args["pagination"].(models.Pagination), args["filter"].(*models.UserFilter)), true
+
+	case "Query.resetPassword":
+		if e.complexity.Query.ResetPassword == nil {
+			break
+		}
+
+		args, err := ec.field_Query_resetPassword_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.ResetPassword(childComplexity, args["id"].(int), args["token"].(string)), true
 
 	case "User.activated":
 		if e.complexity.User.Activated == nil {
@@ -375,6 +403,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
   logout: String
   generateNewActivationTokenForCurrentUser: String
   activateUserAccount(id: Int!, token: String!): User
+  generateNewResetPasswordToken(email: String!): String
 
   updateUser(id: Int!, user: UserInput!): User
   deleteUsers(ids: [Int!]): [User!]
@@ -390,6 +419,7 @@ var parsedSchema = gqlparser.MustLoadSchema(
   fetchUser(id: Int, slug: String): User
   fetchUsers(pagination: Pagination!, filter: UserFilter): UserList
   activateUserAccount(id: Int!, token: String!): User
+  resetPassword(id: Int!, token: String!): String
 }
 `},
 	&ast.Source{Name: "schema/scalars.graphql", Input: `scalar Time
@@ -466,6 +496,20 @@ func (ec *executionContext) field_Mutation_deleteUsers_args(ctx context.Context,
 		}
 	}
 	args["ids"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_generateNewResetPasswordToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["email"]; ok {
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["email"] = arg0
 	return args, nil
 }
 
@@ -604,6 +648,28 @@ func (ec *executionContext) field_Query_fetchUsers_args(ctx context.Context, raw
 		}
 	}
 	args["filter"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_resetPassword_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["id"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["token"]; ok {
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["token"] = arg1
 	return args, nil
 }
 
@@ -778,6 +844,37 @@ func (ec *executionContext) _Mutation_activateUserAccount(ctx context.Context, f
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_generateNewResetPasswordToken(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_generateNewResetPasswordToken_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().GenerateNewResetPasswordToken(rctx, args["email"].(string))
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -957,6 +1054,37 @@ func (ec *executionContext) _Query_activateUserAccount(ctx context.Context, fiel
 	rctx.Result = res
 	ctx = ec.Tracer.StartFieldChildExecution(ctx)
 	return ec.marshalOUser2ᚖgithubᚗcomᚋkichiyakiᚋgraphqlᚑstarterᚋbackendᚋmodelsᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_resetPassword(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
+	ctx = ec.Tracer.StartFieldExecution(ctx, field)
+	defer func() { ec.Tracer.EndFieldExecution(ctx) }()
+	rctx := &graphql.ResolverContext{
+		Object:   "Query",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+	ctx = graphql.WithResolverContext(ctx, rctx)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_resetPassword_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	rctx.Args = args
+	ctx = ec.Tracer.StartFieldResolverExecution(ctx, rctx)
+	resTmp := ec.FieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ResetPassword(rctx, args["id"].(int), args["token"].(string))
+	})
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	rctx.Result = res
+	ctx = ec.Tracer.StartFieldChildExecution(ctx)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) graphql.Marshaler {
@@ -2238,6 +2366,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec._Mutation_generateNewActivationTokenForCurrentUser(ctx, field)
 		case "activateUserAccount":
 			out.Values[i] = ec._Mutation_activateUserAccount(ctx, field)
+		case "generateNewResetPasswordToken":
+			out.Values[i] = ec._Mutation_generateNewResetPasswordToken(ctx, field)
 		case "updateUser":
 			out.Values[i] = ec._Mutation_updateUser(ctx, field)
 		case "deleteUsers":
@@ -2310,6 +2440,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_activateUserAccount(ctx, field)
+				return res
+			})
+		case "resetPassword":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_resetPassword(ctx, field)
 				return res
 			})
 		case "__type":

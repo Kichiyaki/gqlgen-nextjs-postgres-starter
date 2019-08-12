@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import RegisterPage from "./RegisterPage";
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
-import TranslationProvider from "@lib/i18n/Provider";
+import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
 import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
@@ -21,10 +21,10 @@ const renderPage = (mocks = [], registerPage = true) => {
         }
       >
         <ApolloProvider client={client}>
-          <TranslationProvider locale="pl">
+          <MockI18nextProvider>
             <RegisterPage />
             <ToastContainer />
-          </TranslationProvider>
+          </MockI18nextProvider>
         </ApolloProvider>
       </MockRouter>
     ),

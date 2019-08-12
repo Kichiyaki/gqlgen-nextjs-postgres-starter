@@ -16,6 +16,15 @@ func (r *queryResolver) ActivateUserAccount(ctx context.Context, id int, token s
 	return r.AuthUcase.Activate(ctx, id, token)
 }
 
+func (r *queryResolver) ResetPassword(ctx context.Context, id int, token string) (*string, error) {
+	if err := r.AuthUcase.ResetPassword(ctx, id, token); err != nil {
+		return nil, err
+	}
+
+	msg := "Pomyślnie zresetowano hasło"
+	return &msg, nil
+}
+
 func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*models.User, error) {
 	ginCtx, err := middleware.GinContextFromContext(ctx)
 	if err != nil {
@@ -76,4 +85,13 @@ func (r *mutationResolver) GenerateNewActivationTokenForCurrentUser(ctx context.
 
 func (r *mutationResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
 	return r.AuthUcase.Activate(ctx, id, token)
+}
+
+func (r *mutationResolver) GenerateNewResetPasswordToken(ctx context.Context, email string) (*string, error) {
+	if err := r.AuthUcase.GenerateNewResetPasswordToken(ctx, email); err != nil {
+		return nil, err
+	}
+
+	msg := "Pomyślnie wygenerowano"
+	return &msg, nil
 }

@@ -1,21 +1,22 @@
 import React from "react";
 import { render, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
+import i18n from "i18next";
 
-import UserAccountActivationPage from "./UserAccountActivationPage";
-import { users } from "@utils/test_utils/seed";
+import ResetPasswordPage from "./ResetPasswordPage";
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
-import TranslationProvider from "@lib/i18n/Provider";
-import plTranslations from "@lib/i18n/translations/pl";
 import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
-import { ACTIVATE_USER_ACCOUNT_QUERY } from "./queries";
+import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
+import { RESET_PASSWORD_QUERY } from "./queries";
+import pageConstants from "./constants";
 
 const query = {
   id: 123,
   token: "asdd-asdd-asdd-asdd"
 };
 let push;
+const t = i18n.getFixedT(null, pageConstants.NAMESPACE);
 
 const renderPage = (mocks = []) => {
   const client = createClient({ mocks });
@@ -24,10 +25,10 @@ const renderPage = (mocks = []) => {
     ...render(
       <MockRouter push={push} query={query}>
         <ApolloProvider client={client}>
-          <TranslationProvider locale="pl">
-            <UserAccountActivationPage />
+          <MockI18nextProvider>
+            <ResetPasswordPage />
             <ToastContainer />
-          </TranslationProvider>
+          </MockI18nextProvider>
         </ApolloProvider>
       </MockRouter>
     ),
@@ -35,17 +36,17 @@ const renderPage = (mocks = []) => {
   };
 };
 
-describe("UserAccountActivationPage", () => {
+describe("ResetPasswordPage", () => {
   test("should correcly call onCompleted", async () => {
     const mocks = [
       {
         request: {
-          query: ACTIVATE_USER_ACCOUNT_QUERY,
+          query: RESET_PASSWORD_QUERY,
           variables: query
         },
         result: {
           data: {
-            activateUserAccount: users[0]
+            resetPassword: "Success"
           }
         }
       }
@@ -53,11 +54,7 @@ describe("UserAccountActivationPage", () => {
 
     const { getByText } = renderPage(mocks);
     await wait(() => {
-      expect(
-        getByText(
-          plTranslations.USER_ACCOUNT_ACTIVATION_PAGE.success(users[0].login)
-        )
-      ).toBeInTheDocument();
+      expect(getByText(t("success"))).toBeInTheDocument();
       expect(push).toHaveBeenCalled();
     });
   });
@@ -67,7 +64,7 @@ describe("UserAccountActivationPage", () => {
     const mocks = [
       {
         request: {
-          query: ACTIVATE_USER_ACCOUNT_QUERY,
+          query: RESET_PASSWORD_QUERY,
           variables: query
         },
         result: {

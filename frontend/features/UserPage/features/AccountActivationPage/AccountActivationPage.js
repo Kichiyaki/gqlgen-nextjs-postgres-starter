@@ -9,8 +9,9 @@ import { makeStyles } from "@material-ui/core/styles";
 import AppLayout from "@common/AppLayout/AppLayout";
 import constants from "@config/constants";
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
-import useI18N from "@lib/i18n/useI18N";
 import { ACTIVATE_USER_ACCOUNT_QUERY } from "./queries";
+import { withTranslation } from "@lib/i18n/i18n";
+import pageConstants from "./constants";
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -21,23 +22,16 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const UserAccountActivationPage = () => {
+const AccountActivationPage = ({ t }) => {
   const called = useRef(false);
   const classes = useStyles();
   const { query, push } = useRouter();
-  const translations = useI18N();
 
   const handleCompleted = ({ activateUserAccount }) => {
     if (!isNil(activateUserAccount)) {
-      showSuccessMessage(
-        translations.USER_ACCOUNT_ACTIVATION_PAGE.success(
-          activateUserAccount.login
-        )
-      );
+      showSuccessMessage(t("success", { login: activateUserAccount.login }));
     } else {
-      showErrorMessage(
-        translations.USER_ACCOUNT_ACTIVATION_PAGE.errors.default
-      );
+      showErrorMessage(t("errors.default"));
     }
     push(constants.ROUTES.root);
   };
@@ -49,9 +43,7 @@ const UserAccountActivationPage = () => {
     if (graphQLErrors) {
       showErrorMessage(graphQLErrors[0].message);
     } else {
-      showErrorMessage(
-        translations.USER_ACCOUNT_ACTIVATION_PAGE.errors.default
-      );
+      showErrorMessage(t("errors.default"));
     }
     push(constants.ROUTES.root);
   };
@@ -76,7 +68,10 @@ const UserAccountActivationPage = () => {
   );
 };
 
-UserAccountActivationPage.getInitialProps = ({ query, res }) => {
+AccountActivationPage.getInitialProps = ({ query, res }) => {
+  const props = {
+    namespacesRequired: [constants.NAMESPACES.common, pageConstants.NAMESPACE]
+  };
   if (
     Object.keys(query).length === 0 ||
     isNaN(parseInt(query.id)) ||
@@ -84,16 +79,16 @@ UserAccountActivationPage.getInitialProps = ({ query, res }) => {
   ) {
     if (res) {
       res.writeHead(302, {
-        Location: "/"
+        Location: constants.ROUTES.root
       });
       res.end();
-      return {};
+      return props;
     } else {
-      Router.push("/");
+      Router.push(constants.ROUTES.root);
     }
   }
 
-  return {};
+  return props;
 };
 
-export default UserAccountActivationPage;
+export default withTranslation(pageConstants.NAMESPACE)(AccountActivationPage);

@@ -25,5 +25,13 @@ export default {
       }
     }
   },
-  AUTHOR_FULL_NAME: "Dawid Wysokiński"
+  AUTHOR_FULL_NAME: "Dawid Wysokiński",
+  NAMESPACES: {
+    common: "common",
+    userPage: {
+      settingsPage: {
+        navigation: "user-page/settings-page/navigation"
+      }
+    }
+  }
 };

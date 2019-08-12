@@ -13,13 +13,17 @@ func (midd *middleware) AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		session := sessions.Default(c)
 		v := session.Get("user")
-		id, ok := v.(int)
-		if ok {
-			user, err := midd.userRepo.GetByID(context.Background(), id)
-			if err == nil && user.ID > 0 {
-				c.Request = c.Request.WithContext(StoreUserInContext(c.Request.Context(), user))
+		if v != nil {
+			id, ok := v.(float64)
+			userID := int(id)
+			if ok {
+				user, err := midd.userRepo.GetByID(context.Background(), userID)
+				if err == nil && user.ID > 0 {
+					c.Request = c.Request.WithContext(StoreUserInContext(c.Request.Context(), user))
+				}
 			}
 		}
+
 		c.Next()
 	}
 }

@@ -1,15 +1,20 @@
-import React, { useContext } from "react";
+import React from "react";
+import { func } from "prop-types";
 import { useMutation } from "@apollo/react-hooks";
 import { isNil } from "lodash";
+
 import { makeStyles } from "@material-ui/core/styles";
 import AppBar from "@material-ui/core/AppBar";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
-import I18NContext from "@lib/i18n/context";
+
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import useCurrentUser from "@hooks/useCurrentUser";
+import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
+import { withTranslation } from "@lib/i18n/i18n";
 import { LOGOUT_USER_MUTATION } from "./mutations";
+import globalConstants from "@config/constants";
 import constants from "./constants";
 
 const useStyles = makeStyles(theme => ({
@@ -21,9 +26,8 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const AppHeader = () => {
+const AppHeader = ({ t }) => {
   const classes = useStyles();
-  const { APPLICATION } = useContext(I18NContext);
 
   const {
     data: { fetchCurrentUser }
@@ -37,9 +41,9 @@ const AppHeader = () => {
         refetchQueries: [{ query: FETCH_CURRENT_USER_QUERY }],
         awaitRefetchQueries: true
       });
-      showSuccessMessage(APPLICATION.header.logout.success);
+      showSuccessMessage(t("HEADER.logout.success"));
     } catch (error) {
-      showErrorMessage(APPLICATION.header.logout.error);
+      showErrorMessage(t("HEADER.logout.error"));
     }
   };
 
@@ -48,7 +52,7 @@ const AppHeader = () => {
       <AppBar position="static">
         <Toolbar>
           <Typography variant="h6" className={classes.title}>
-            {APPLICATION.name}
+            {t("APPLICATION.name")}
           </Typography>
           <div>
             {!isNil(fetchCurrentUser) && (
@@ -58,7 +62,7 @@ const AppHeader = () => {
                 disabled={loading}
                 color="inherit"
               >
-                {APPLICATION.header.buttons.logout}
+                {t("HEADER.buttons.logout")}
               </Button>
             )}
           </div>
@@ -68,4 +72,8 @@ const AppHeader = () => {
   );
 };
 
-export default AppHeader;
+AppHeader.propTypes = {
+  t: func.isRequired
+};
+
+export default withTranslation(globalConstants.NAMESPACES.common)(AppHeader);
