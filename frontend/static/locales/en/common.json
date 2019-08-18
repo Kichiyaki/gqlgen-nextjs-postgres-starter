@@ -4,11 +4,14 @@
   },
   "HEADER": {
     "logout": {
-      "success": "You have successfully logged out",
-      "error": "You were unable to log out, please try again later"
+      "success": "You have successfully logged out.",
+      "error": "You were unable to log out, please try again later."
     },
     "buttons": {
       "logout": "Logout"
+    },
+    "links": {
+      "activateAccount": "Activate account"
     }
   },
   "FOOTER": {

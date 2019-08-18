@@ -1,6 +1,6 @@
 {
   "errors": {
-    "default": "Wystąpił błąd podczas aktywacji konta, prosimy spróbować później"
+    "default": "Wystąpił błąd podczas aktywacji konta, prosimy spróbować później."
   },
-  "success": "Konto {{}} zostało pomyślnie zaaktywowane"
+  "success": "Konto {{login}} zostało pomyślnie zaaktywowane."
 }

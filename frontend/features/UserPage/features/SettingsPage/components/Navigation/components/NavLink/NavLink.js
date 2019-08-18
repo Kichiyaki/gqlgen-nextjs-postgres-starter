@@ -1,9 +1,9 @@
 import React from "react";
+import { string, bool, node } from "prop-types";
 import Link from "next/link";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
-import { string, bool, node } from "prop-types";
 
 const NavLink = ({ children, text, href, selected }) => {
   return (

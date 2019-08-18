@@ -167,6 +167,14 @@ func (c *RedisStore) Options(options ginSessions.Options) {
 	}
 }
 
+func (s *RedisStore) ping() (bool, error) {
+	data, err := s.conn.Ping().Result()
+	if err != nil || data == "" {
+		return false, err
+	}
+	return (data == "PONG"), nil
+}
+
 func (s *RedisStore) load(session *sessions.Session) (bool, error) {
 	data, err := s.conn.Get(s.keyPrefix + session.ID).Result()
 	if err != nil {

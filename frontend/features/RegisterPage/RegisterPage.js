@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { func } from "prop-types";
 import NextLink from "next/link";
 import { useRouter } from "next/router";
 import Avatar from "@material-ui/core/Avatar";
@@ -17,7 +16,7 @@ import withCurrentUser from "@hocs/withCurrentUser";
 import restrictionWrapper from "@hocs/restrictionWrapper";
 import constants from "@config/constants";
 import pageConstants from "./constants";
-import { withTranslation } from "@lib/i18n/i18n";
+import { useTranslation } from "@lib/i18n/i18n";
 
 const useStyles = makeStyles(theme => ({
   "@global": {
@@ -37,7 +36,7 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const RegisterPage = ({ t }) => {
+const RegisterPage = () => {
   const classes = useStyles();
   const { route } = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -49,6 +48,8 @@ const RegisterPage = ({ t }) => {
   const handleClose = () => {
     setIsOpen(false);
   };
+
+  const { t } = useTranslation(pageConstants.NAMESPACE);
 
   return (
     <Container component="main" maxWidth="xs">
@@ -91,10 +92,6 @@ const RegisterPage = ({ t }) => {
   );
 };
 
-RegisterPage.propTypes = {
-  t: func.isRequired
-};
-
 RegisterPage.getInitialProps = () => {
   return {
     namespacesRequired: [pageConstants.NAMESPACE, constants.NAMESPACES.common]
@@ -102,7 +99,5 @@ RegisterPage.getInitialProps = () => {
 };
 
 export default withCurrentUser(
-  restrictionWrapper({ mustBeLoggedOut: true })(
-    withTranslation(pageConstants.NAMESPACE)(RegisterPage)
-  )
+  restrictionWrapper({ mustBeLoggedOut: true })(RegisterPage)
 );

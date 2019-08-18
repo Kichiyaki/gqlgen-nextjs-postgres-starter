@@ -35,6 +35,7 @@ describe("AppHeader", () => {
     const { asFragment, queryByTestId, getByText } = renderHeader();
     expect(asFragment()).toMatchSnapshot();
     expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
     expect(queryByTestId(constants.LOGOUT_BUTTON)).not.toBeInTheDocument();
   });
 
@@ -42,6 +43,22 @@ describe("AppHeader", () => {
     const { asFragment, getByTestId, getByText } = renderHeader([], users[0]);
     expect(asFragment()).toMatchSnapshot();
     expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
+    expect(getByTestId(constants.LOGOUT_BUTTON)).toBeInTheDocument();
+    expect(getByTestId(constants.LOGOUT_BUTTON)).toHaveTextContent(
+      common.HEADER.buttons.logout
+    );
+  });
+
+  test("should render header when user is logged in and has a deactivated account correctly", () => {
+    const { asFragment, getByTestId, getByText } = renderHeader(
+      [],
+      users.find(user => !user.activated)
+    );
+    expect(asFragment()).toMatchSnapshot();
+    expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.links.activateAccount)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
     expect(getByTestId(constants.LOGOUT_BUTTON)).toBeInTheDocument();
     expect(getByTestId(constants.LOGOUT_BUTTON)).toHaveTextContent(
       common.HEADER.buttons.logout

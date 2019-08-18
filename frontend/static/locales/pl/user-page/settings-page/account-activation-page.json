@@ -4,10 +4,10 @@
   "activateAccountForm": {
     "errors": {
       "validation": {
-        "mustProvideToken": "Musisz wprowadzić token",
-        "tokenIsInvalid": "Wprowadziłeś niepoprawny token"
+        "mustProvideToken": "Musisz wprowadzić token.",
+        "tokenIsInvalid": "Wprowadziłeś niepoprawny token."
       },
-      "default": "Nie udało się zaaktywować konta, prosimy spróbować później"
+      "default": "Nie udało się zaaktywować konta, prosimy spróbować później."
     },
     "inputLabels": {
       "token": "Token"
@@ -17,9 +17,9 @@
   },
   "generateNewActivationTokenForm": {
     "errors": {
-      "default": "Nie udało się wygenerować nowego tokena aktywacyjnego, prosimy spróbować później"
+      "default": "Nie udało się wygenerować nowego tokena aktywacyjnego, prosimy spróbować później."
     },
-    "success": "Token aktywacyjny został wysłany na konto email",
+    "success": "Token aktywacyjny został wysłany na konto email.",
     "submitButton": "Wygeneruj nowy token aktywacyjny"
   }
 }

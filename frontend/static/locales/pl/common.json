@@ -4,11 +4,14 @@
   },
   "HEADER": {
     "logout": {
-      "success": "Pomyślnie się wylogowałeś",
-      "error": "Nie udało się wylogować, prosimy spróbować później"
+      "success": "Pomyślnie się wylogowałeś.",
+      "error": "Nie udało się wylogować, prosimy spróbować później."
     },
     "buttons": {
       "logout": "Wyloguj"
+    },
+    "links": {
+      "activateAccount": "Aktywuj konto"
     }
   },
   "FOOTER": {

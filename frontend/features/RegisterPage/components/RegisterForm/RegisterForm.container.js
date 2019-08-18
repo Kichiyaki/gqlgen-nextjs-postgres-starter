@@ -52,13 +52,13 @@ const RegisterForm = ({ t }) => {
           .min(
             constants.VALIDATION.minimumLengthOfLogin,
             t("registerForm.errors.validation.minimumLengthOfLogin", {
-              characters: constants.VALIDATION.minimumLengthOfLogin
+              count: constants.VALIDATION.minimumLengthOfLogin
             })
           )
           .max(
             constants.VALIDATION.maximumLengthOfLogin,
             t("registerForm.errors.validation.maximumLengthOfLogin", {
-              characters: constants.VALIDATION.maximumLengthOfLogin
+              count: constants.VALIDATION.maximumLengthOfLogin
             })
           )
           .required(t("registerForm.errors.validation.mustProvideLogin")),
@@ -72,13 +72,13 @@ const RegisterForm = ({ t }) => {
           .min(
             constants.VALIDATION.minimumLengthOfPassword,
             t("registerForm.errors.validation.minimumLengthOfPassword", {
-              characters: constants.VALIDATION.minimumLengthOfPassword
+              count: constants.VALIDATION.minimumLengthOfPassword
             })
           )
           .max(
             constants.VALIDATION.maximumLengthOfPassword,
             t("registerForm.errors.validation.maximumLengthOfPassword", {
-              characters: constants.VALIDATION.maximumLengthOfPassword
+              count: constants.VALIDATION.maximumLengthOfPassword
             })
           )
           .matches(

@@ -1,14 +1,12 @@
 import React from "react";
 import { render, wait } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 import i18n from "i18next";
 
 import AccountActivationPage from "./AccountActivationPage";
 import { users } from "@utils/test_utils/seed";
 import createClient from "@utils/test_utils/createClient";
-import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
-import MockRouter from "@utils/test_utils/MockRouter";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
+
+import TestLayout from "@utils/test_utils/TestLayout";
 import { ACTIVATE_USER_ACCOUNT_QUERY } from "./queries";
 import pageConstants from "./constants";
 
@@ -24,14 +22,9 @@ const renderPage = (mocks = []) => {
   push = jest.fn();
   return {
     ...render(
-      <MockRouter push={push} query={query}>
-        <ApolloProvider client={client}>
-          <MockI18nextProvider>
-            <AccountActivationPage />
-            <ToastContainer />
-          </MockI18nextProvider>
-        </ApolloProvider>
-      </MockRouter>
+      <TestLayout client={client} routerProps={{ push, query }}>
+        <AccountActivationPage />
+      </TestLayout>
     ),
     client
   };

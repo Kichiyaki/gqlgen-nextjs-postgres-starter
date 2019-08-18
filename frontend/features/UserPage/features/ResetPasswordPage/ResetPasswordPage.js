@@ -3,28 +3,18 @@ import Router, { useRouter } from "next/router";
 import { Query } from "react-apollo";
 import ClipLoader from "react-spinners/ClipLoader";
 import isUUID from "validator/lib/isUUID";
-import { makeStyles } from "@material-ui/core/styles";
 
 import AppLayout from "@common/AppLayout/AppLayout";
 import constants from "@config/constants";
 import pageConstants from "./constants";
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import { RESET_PASSWORD_QUERY } from "./queries";
-import { withTranslation } from "@lib/i18n/i18n";
+import { useTranslation } from "@lib/i18n/i18n";
 
-const useStyles = makeStyles(() => ({
-  container: {
-    minHeight: "50vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center"
-  }
-}));
-
-const ResetPasswordPage = ({ t }) => {
+const ResetPasswordPage = () => {
   const called = useRef(false);
-  const classes = useStyles();
   const { query, push } = useRouter();
+  const { t } = useTranslation(pageConstants.NAMESPACE);
 
   const handleCompleted = () => {
     showSuccessMessage(t("success"));
@@ -54,7 +44,7 @@ const ResetPasswordPage = ({ t }) => {
     >
       {() => {
         return (
-          <AppLayout gridProps={{ classes }}>
+          <AppLayout gridProps={{ justify: "center", align: "center" }}>
             <ClipLoader size={250} />
           </AppLayout>
         );
@@ -86,4 +76,4 @@ ResetPasswordPage.getInitialProps = ({ query, res }) => {
   return props;
 };
 
-export default withTranslation(pageConstants.NAMESPACE)(ResetPasswordPage);
+export default ResetPasswordPage;

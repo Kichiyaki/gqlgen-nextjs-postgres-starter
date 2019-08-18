@@ -1,12 +1,9 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 
 import RegisterPage from "./RegisterPage";
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
-import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import registerPageConstants from "./constants";
@@ -15,18 +12,16 @@ const renderPage = (mocks = [], registerPage = true) => {
   const client = createClient({ mocks });
   return {
     ...render(
-      <MockRouter
-        route={
-          registerPage ? constants.ROUTES.register : constants.ROUTES.login
-        }
+      <TestLayout
+        client={client}
+        routerProps={{
+          route: registerPage
+            ? constants.ROUTES.register
+            : constants.ROUTES.login
+        }}
       >
-        <ApolloProvider client={client}>
-          <MockI18nextProvider>
-            <RegisterPage />
-            <ToastContainer />
-          </MockI18nextProvider>
-        </ApolloProvider>
-      </MockRouter>
+        <RegisterPage />
+      </TestLayout>
     ),
     client
   };

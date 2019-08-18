@@ -1,5 +1,4 @@
 import React from "react";
-import { func } from "prop-types";
 import { useMutation } from "@apollo/react-hooks";
 import { isNil } from "lodash";
 
@@ -9,10 +8,11 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import Button from "@material-ui/core/Button";
 
+import Link from "@common/Link/Link";
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import useCurrentUser from "@hooks/useCurrentUser";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
-import { withTranslation } from "@lib/i18n/i18n";
+import { useTranslation } from "@lib/i18n/i18n";
 import { LOGOUT_USER_MUTATION } from "./mutations";
 import globalConstants from "@config/constants";
 import constants from "./constants";
@@ -23,15 +23,22 @@ const useStyles = makeStyles(theme => ({
   },
   title: {
     flexGrow: 1
+  },
+  buttons__container: {
+    "& > *:not(:last-child)": {
+      marginRight: theme.spacing(1)
+    }
   }
 }));
 
-const AppHeader = ({ t }) => {
+const AppHeader = () => {
   const classes = useStyles();
 
   const {
     data: { fetchCurrentUser }
   } = useCurrentUser();
+
+  const { t } = useTranslation(globalConstants.NAMESPACES.common);
 
   const [logoutUserMutation, { loading }] = useMutation(LOGOUT_USER_MUTATION);
 
@@ -54,8 +61,19 @@ const AppHeader = ({ t }) => {
           <Typography variant="h6" className={classes.title}>
             {t("APPLICATION.name")}
           </Typography>
-          <div>
-            {!isNil(fetchCurrentUser) && (
+          {!isNil(fetchCurrentUser) && (
+            <div className={classes.buttons__container}>
+              {!fetchCurrentUser.activated && (
+                <Link
+                  href={
+                    globalConstants.ROUTES.userPage.settingsPage
+                      .accountActivation
+                  }
+                  linkProps={{ color: "secondary" }}
+                >
+                  {t("HEADER.links.activateAccount")}
+                </Link>
+              )}
               <Button
                 onClick={logoutUser}
                 data-testid={constants.LOGOUT_BUTTON}
@@ -64,16 +82,12 @@ const AppHeader = ({ t }) => {
               >
                 {t("HEADER.buttons.logout")}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </Toolbar>
       </AppBar>
     </div>
   );
 };
 
-AppHeader.propTypes = {
-  t: func.isRequired
-};
-
-export default withTranslation(globalConstants.NAMESPACES.common)(AppHeader);
+export default AppHeader;

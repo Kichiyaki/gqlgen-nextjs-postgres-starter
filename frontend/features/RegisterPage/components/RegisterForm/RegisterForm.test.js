@@ -72,7 +72,7 @@ describe("RegisterForm", () => {
       expect(
         getByText(
           t("registerForm.errors.validation.minimumLengthOfLogin", {
-            characters: constants.VALIDATION.minimumLengthOfLogin
+            count: constants.VALIDATION.minimumLengthOfLogin
           })
         )
       ).toBeInTheDocument()
@@ -97,7 +97,7 @@ describe("RegisterForm", () => {
       expect(
         getByText(
           t("registerForm.errors.validation.maximumLengthOfLogin", {
-            characters: constants.VALIDATION.maximumLengthOfLogin
+            count: constants.VALIDATION.maximumLengthOfLogin
           })
         )
       ).toBeInTheDocument()
@@ -140,7 +140,7 @@ describe("RegisterForm", () => {
       expect(
         getByText(
           t("registerForm.errors.validation.minimumLengthOfPassword", {
-            characters: constants.VALIDATION.minimumLengthOfPassword
+            count: constants.VALIDATION.minimumLengthOfPassword
           })
         )
       ).toBeInTheDocument()
@@ -165,7 +165,7 @@ describe("RegisterForm", () => {
       expect(
         getByText(
           t("registerForm.errors.validation.maximumLengthOfPassword", {
-            characters: constants.VALIDATION.maximumLengthOfPassword
+            count: constants.VALIDATION.maximumLengthOfPassword
           })
         )
       ).toBeInTheDocument()

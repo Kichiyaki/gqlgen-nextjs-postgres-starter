@@ -12,14 +12,14 @@
     "inputLabels": {
       "token": "Token"
     },
-    "success": "Account has been successfully activated",
+    "success": "Account has been successfully activated.",
     "submitButton": "Activate account"
   },
   "generateNewActivationTokenForm": {
     "errors": {
-      "default": "Unknow error, please try again later"
+      "default": "Unknow error, please try again later."
     },
-    "success": "Activation token has been sent to your email",
+    "success": "Activation token has been sent to your email.",
     "submitButton": "Generate new activation token"
   }
 }

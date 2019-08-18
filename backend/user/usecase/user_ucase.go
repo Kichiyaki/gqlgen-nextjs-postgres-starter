@@ -4,6 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/kichiyaki/graphql-starter/backend/utils"
+
+	"github.com/kichiyaki/graphql-starter/backend/middleware"
+
 	"github.com/kichiyaki/graphql-starter/backend/auth"
 
 	pgfilter "github.com/kichiyaki/pg-filter"
@@ -11,10 +15,8 @@ import (
 	"github.com/kichiyaki/structs"
 	"golang.org/x/crypto/bcrypt"
 
-	_authErrors "github.com/kichiyaki/graphql-starter/backend/auth/errors"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/user"
-	"github.com/kichiyaki/graphql-starter/backend/user/errors"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
 )
 
@@ -31,21 +33,21 @@ func NewUserUsecase(userRepo user.Repository, authUcase auth.Usecase) user.Useca
 }
 
 func (ucase *userUsecase) Store(ctx context.Context, input models.UserInput) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	if !ucase.authUcase.IsLogged(ctx) {
-		return nil, _authErrors.ErrNotLoggedIn
+		return nil, utils.GetErrorMsg(localizer, "ErrNotLoggedIn")
 	}
 	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
-		return nil, _authErrors.ErrUnauthorized
+		return nil, utils.GetErrorMsg(localizer, "ErrUnauthorized")
 	}
 
 	user := input.ToUser()
 
-	cfg := validate.UserValidationConfig{
-		Login:    true,
-		Password: true,
-		Role:     true,
-		Email:    true,
-	}
+	cfg := validate.NewConfig(localizer)
+	cfg.Login = true
+	cfg.Password = true
+	cfg.Role = true
+	cfg.Email = true
 	if err := cfg.Validate(*user); err != nil {
 		return nil, err
 	}
@@ -95,11 +97,12 @@ func (ucase *userUsecase) Fetch(ctx context.Context,
 }
 
 func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserInput) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	if !ucase.authUcase.IsLogged(ctx) {
-		return nil, _authErrors.ErrNotLoggedIn
+		return nil, utils.GetErrorMsg(localizer, "ErrNotLoggedIn")
 	}
 	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
-		return nil, _authErrors.ErrUnauthorized
+		return nil, utils.GetErrorMsg(localizer, "ErrUnauthorized")
 	}
 
 	user, err := ucase.GetByID(ctx, id)
@@ -128,7 +131,7 @@ func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserI
 		user.Activated = *input.Activated
 	}
 	if somethingToValidate := cfg.IsSomethingToValidate(); !somethingToValidate {
-		return nil, errors.ErrNothingChanged
+		return nil, utils.GetErrorMsg(localizer, "ErrNothingChanged")
 	}
 	if err := cfg.Validate(*user); err != nil {
 		return nil, err
@@ -146,18 +149,19 @@ func (ucase *userUsecase) Update(ctx context.Context, id int, input models.UserI
 }
 
 func (ucase *userUsecase) Delete(ctx context.Context, ids []int) ([]*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	if !ucase.authUcase.IsLogged(ctx) {
-		return nil, _authErrors.ErrNotLoggedIn
+		return nil, utils.GetErrorMsg(localizer, "ErrNotLoggedIn")
 	}
 	if !ucase.authUcase.HasAdministrativePrivileges(ctx) {
-		return nil, _authErrors.ErrUnauthorized
+		return nil, utils.GetErrorMsg(localizer, "ErrUnauthorized")
 	}
 
 	user := ucase.authUcase.CurrentUser(ctx)
 	fmt.Println(user.ID, ids)
 	for _, id := range ids {
 		if id == user.ID {
-			return nil, errors.ErrUserCannotDeleteHisAccountByHimself
+			return nil, utils.GetErrorMsg(localizer, "ErrUserCannotDeleteHisAccountByHimself")
 		}
 	}
 

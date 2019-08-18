@@ -1,13 +1,10 @@
 import React from "react";
 import { render, wait } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 import i18n from "i18next";
 
 import ResetPasswordPage from "./ResetPasswordPage";
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
-import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { RESET_PASSWORD_QUERY } from "./queries";
 import pageConstants from "./constants";
 
@@ -23,14 +20,9 @@ const renderPage = (mocks = []) => {
   push = jest.fn();
   return {
     ...render(
-      <MockRouter push={push} query={query}>
-        <ApolloProvider client={client}>
-          <MockI18nextProvider>
-            <ResetPasswordPage />
-            <ToastContainer />
-          </MockI18nextProvider>
-        </ApolloProvider>
-      </MockRouter>
+      <TestLayout client={client} routerProps={{ push, query }}>
+        <ResetPasswordPage />
+      </TestLayout>
     ),
     client
   };

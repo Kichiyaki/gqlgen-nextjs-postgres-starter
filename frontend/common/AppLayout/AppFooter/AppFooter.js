@@ -1,9 +1,8 @@
 import React from "react";
-import { func } from "prop-types";
 import { makeStyles } from "@material-ui/core/styles";
 
 import Link from "./components/Link/Link";
-import { withTranslation } from "@lib/i18n/i18n";
+import { useTranslation } from "@lib/i18n/i18n";
 import constants from "@config/constants";
 
 const useStyles = makeStyles(theme => ({
@@ -32,8 +31,10 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const AppFooter = ({ t }) => {
+const AppFooter = () => {
   const classes = useStyles();
+
+  const { t } = useTranslation(constants.NAMESPACES.common);
 
   return (
     <footer className={classes.footer}>
@@ -59,8 +60,4 @@ const AppFooter = ({ t }) => {
   );
 };
 
-AppFooter.propTypes = {
-  t: func.isRequired
-};
-
-export default withTranslation(constants.NAMESPACES.common)(AppFooter);
+export default AppFooter;

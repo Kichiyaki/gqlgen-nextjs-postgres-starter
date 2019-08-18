@@ -10,6 +10,8 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/text/language"
+
 	"github.com/go-redis/redis"
 
 	"github.com/robfig/cron"
@@ -27,6 +29,7 @@ import (
 	_tokenRepo "github.com/kichiyaki/graphql-starter/backend/token/repository"
 	_userRepo "github.com/kichiyaki/graphql-starter/backend/user/repository"
 	_userUsecase "github.com/kichiyaki/graphql-starter/backend/user/usecase"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/spf13/viper"
 )
 
@@ -46,7 +49,7 @@ func main() {
 		SetPort(viper.GetString("database.port")).
 		SetURI(viper.GetString("database.uri")).
 		SetUser(viper.GetString("database.username")).
-		SetApplicationName(viper.GetString("database.applicationName"))
+		SetApplicationName(viper.GetString("application.name"))
 	conn, err := postgre.NewDatabase(dbCfg)
 	if err != nil {
 		panic(err)
@@ -76,7 +79,14 @@ func main() {
 		SetPassword(viper.GetString("email.password")).
 		SetURI(viper.GetString("email.uri")))
 
-	authUsecase := _authUsecase.NewAuthUsecase(userRepo, tokenRepo, email, sessionStore)
+	authUsecase := _authUsecase.NewAuthUsecase(&_authUsecase.Config{
+		SessStore:       sessionStore,
+		UserRepo:        userRepo,
+		TokenRepo:       tokenRepo,
+		Email:           email,
+		FrontendURL:     viper.GetString("application.frontend"),
+		ApplicationName: viper.GetString("application.name"),
+	})
 	userUsecase := _userUsecase.NewUserUsecase(userRepo, authUsecase)
 
 	c := cron.New()
@@ -88,7 +98,7 @@ func main() {
 	}()
 
 	cors := handlers.CORS(
-		handlers.AllowedOrigins([]string{"http://localhost:3000", "http://localhost:3001"}),
+		handlers.AllowedOrigins([]string{viper.GetString("application.frontend")}),
 		handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PATCH", "DELETE", "OPTIONS"}),
 		handlers.AllowedHeaders([]string{
 			"Accept",
@@ -99,12 +109,15 @@ func main() {
 			"Authorization"}),
 		handlers.AllowCredentials(),
 	)
-	middleware := _middleware.NewMiddleware(userRepo)
+	bundle := i18n.NewBundle(language.Polish)
+	bundle.MustLoadMessageFile("../../i18n/locales/active.pl.json")
+	middleware := _middleware.NewMiddleware(userRepo, bundle)
 	router := gin.Default()
 	// store := cookie.NewStore([]byte(viper.GetString("session.secretKey")))
 	router.Use(sessions.Sessions(viper.GetString("session.name"), sessionStore))
 	router.Use(middleware.GinContextToContextMiddleware())
 	router.Use(middleware.AuthMiddleware())
+	router.Use(middleware.LocalizeMiddleware())
 	_graphqlHandler.NewGraphqlHandler(router.Group("/api"), userUsecase, authUsecase)
 
 	srv := &http.Server{
