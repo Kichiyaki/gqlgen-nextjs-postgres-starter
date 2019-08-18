@@ -1,0 +1,6 @@
+{
+  "errors": {
+    "default": "Account cannot be activated, please try again later."
+  },
+  "success": "The {{login}} account has been successfully activated."
+}

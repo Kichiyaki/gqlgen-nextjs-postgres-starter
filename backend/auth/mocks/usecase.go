@@ -103,6 +103,45 @@ func (_m *Usecase) GenerateNewActivationToken(ctx context.Context, id int) error
 	return r0
 }
 
+func (_m *Usecase) GenerateNewActivationTokenForCurrentUser(ctx context.Context) error {
+	ret := _m.Called(ctx)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = rf(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+func (_m *Usecase) GenerateNewResetPasswordToken(ctx context.Context, emailAddress string) error {
+	ret := _m.Called(ctx, emailAddress)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string) error); ok {
+		r0 = rf(ctx, emailAddress)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
+func (_m *Usecase) ResetPassword(ctx context.Context, id int, token string) error {
+	ret := _m.Called(ctx, id, token)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, int, string) error); ok {
+		r0 = rf(ctx, id, token)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 func (_m *Usecase) IsLogged(ctx context.Context) bool {
 	ret := _m.Called(ctx)
 

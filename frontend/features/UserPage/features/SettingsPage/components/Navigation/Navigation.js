@@ -8,9 +8,9 @@ import Divider from "@material-ui/core/Divider";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import FingerprintIcon from "@material-ui/icons/Fingerprint";
 import useCurrentUser from "@hooks/useCurrentUser";
-import useI18N from "@lib/i18n/useI18N";
 import constants from "@config/constants";
 import NavLink from "./components/NavLink/NavLink";
+import { withTranslation } from "@lib/i18n/i18n";
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -18,28 +18,23 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-const Navigation = () => {
+const Navigation = ({ t }) => {
   const {
     data: { fetchCurrentUser }
   } = useCurrentUser();
-  const {
-    USER_PAGE: {
-      SETTINGS_PAGE: { navigation }
-    }
-  } = useI18N();
   const classes = useStyles();
   const { route } = useRouter();
 
   return (
     <Paper className={classes.root}>
       <Typography align="center" variant="h5" component="h2">
-        {navigation.settings}
+        {t("settings")}
       </Typography>
       <Divider />
       <List component="nav">
         {!fetchCurrentUser.activated && (
           <NavLink
-            text={navigation.accountActivation}
+            text={t("accountActivation")}
             href={constants.ROUTES.userPage.settingsPage.accountActivation}
             selected={
               constants.ROUTES.userPage.settingsPage.accountActivation === route
@@ -49,7 +44,7 @@ const Navigation = () => {
           </NavLink>
         )}
         <NavLink
-          text={navigation.changePassword}
+          text={t("changePassword")}
           href={constants.ROUTES.userPage.settingsPage.changePassword}
           selected={
             constants.ROUTES.userPage.settingsPage.changePassword === route
@@ -62,4 +57,6 @@ const Navigation = () => {
   );
 };
 
-export default Navigation;
+export default withTranslation("user-page/settings-page/navigation")(
+  Navigation
+);

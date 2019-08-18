@@ -1,3 +1,3 @@
-module github.com/kichiyaki/tribalwars-manager-api
+module github.com/kichiyaki/graphql-starter
 
 go 1.12

@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
+import i18n from "i18next";
 
 import { ACTIVATE_USER_ACCOUNT_MUTATION } from "../../mutations";
 import ActivateAccountForm from "./ActivateAccountForm.container";
@@ -9,16 +10,9 @@ import MockRouter from "@utils/test_utils/MockRouter";
 import { users } from "@utils/test_utils/seed";
 import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
-import accountActivationPageConstants from "../../constants";
-import translations from "@lib/i18n/translations/pl";
+import pageConstants from "../../constants";
 
-const {
-  USER_PAGE: {
-    SETTINGS_PAGE: {
-      ACCOUNT_ACTIVATION_PAGE: { activateAccountForm }
-    }
-  }
-} = translations;
+const t = i18n.getFixedT(null, pageConstants.NAMESPACE);
 
 const renderActivateAccountForm = (mocks = []) => {
   const client = createClient({ mocks, user: users[0] });
@@ -26,7 +20,7 @@ const renderActivateAccountForm = (mocks = []) => {
     ...render(
       <MockRouter>
         <ApolloProvider client={client}>
-          <ActivateAccountForm translations={translations} />
+          <ActivateAccountForm t={t} />
           <ToastContainer />
         </ApolloProvider>
       </MockRouter>
@@ -45,9 +39,11 @@ describe("ActivateAccountForm", () => {
     });
 
     await wait(() => {
-      [activateAccountForm.errors.validation.mustProvideToken].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
-      });
+      [t("activateAccountForm.errors.validation.mustProvideToken")].forEach(
+        text => {
+          expect(getByText(text)).toBeInTheDocument();
+        }
+      );
     });
   });
 
@@ -55,16 +51,18 @@ describe("ActivateAccountForm", () => {
     const { getAllByTestId, getByText } = renderActivateAccountForm();
 
     getAllByTestId(testID).forEach(el => {
-      if (el.id === accountActivationPageConstants.TOKEN) {
+      if (el.id === pageConstants.TOKEN) {
         fireEvent.change(el, { target: { value: "asdasdadsada" } });
         fireEvent.blur(el);
       }
     });
 
     await wait(() => {
-      [activateAccountForm.errors.validation.tokenIsInvalid].forEach(text => {
-        expect(getByText(text)).toBeInTheDocument();
-      });
+      [t("activateAccountForm.errors.validation.tokenIsInvalid")].forEach(
+        text => {
+          expect(getByText(text)).toBeInTheDocument();
+        }
+      );
     });
   });
 
@@ -106,12 +104,10 @@ describe("ActivateAccountForm", () => {
       expect(getByDisplayValue(values.token)).toBeInTheDocument()
     );
 
-    fireEvent.submit(
-      getByTestId(accountActivationPageConstants.ACTIVATE_ACCOUNT_FORM)
-    );
+    fireEvent.submit(getByTestId(pageConstants.ACTIVATE_ACCOUNT_FORM));
 
     await wait(() =>
-      expect(getByText(activateAccountForm.success)).toBeInTheDocument()
+      expect(getByText(t("activateAccountForm.success"))).toBeInTheDocument()
     );
   });
 });

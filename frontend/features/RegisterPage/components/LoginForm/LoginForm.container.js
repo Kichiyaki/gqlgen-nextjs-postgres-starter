@@ -2,7 +2,7 @@ import React from "react";
 import { useMutation } from "@apollo/react-hooks";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { object } from "prop-types";
+import { func } from "prop-types";
 
 import LoginFormCmp from "./LoginForm.component";
 import { LOGIN_MUTATION } from "../../mutations";
@@ -10,7 +10,7 @@ import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import constants from "@config/constants";
 
-const LoginForm = ({ translations }) => {
+const LoginForm = ({ t }) => {
   const [loginMutation] = useMutation(LOGIN_MUTATION);
 
   const handleSubmit = async (values, { resetForm, setSubmitting }) => {
@@ -21,12 +21,12 @@ const LoginForm = ({ translations }) => {
         awaitRefetchQueries: true
       });
       resetForm();
-      showSuccessMessage(translations.REGISTER_PAGE.loginForm.success);
+      showSuccessMessage(t("loginForm.success"));
     } catch (error) {
       if (error.graphQLErrors && error.graphQLErrors[0]) {
         showErrorMessage(error.graphQLErrors[0].message);
       } else {
-        showErrorMessage(translations.REGISTER_PAGE.loginForm.errors.default);
+        showErrorMessage(t("loginForm.errors.default"));
       }
     }
     setSubmitting(false);
@@ -37,57 +37,50 @@ const LoginForm = ({ translations }) => {
         login: "",
         password: ""
       }}
-      render={formikProps => (
-        <LoginFormCmp {...formikProps} translations={translations} />
-      )}
+      render={formikProps => <LoginFormCmp {...formikProps} t={t} />}
       onSubmit={handleSubmit}
       validationSchema={Yup.object().shape({
         login: Yup.string()
           .trim()
           .min(
             constants.VALIDATION.minimumLengthOfLogin,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .minimumLengthOfLogin
+            t("registerForm.errors.validation.minimumLengthOfLogin", {
+              count: constants.VALIDATION.minimumLengthOfLogin
+            })
           )
           .max(
             constants.VALIDATION.maximumLengthOfLogin,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .maximumLengthOfLogin
+            t("registerForm.errors.validation.maximumLengthOfLogin", {
+              count: constants.VALIDATION.maximumLengthOfLogin
+            })
           )
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvideLogin
-          ),
+          .required(t("registerForm.errors.validation.mustProvideLogin")),
         password: Yup.string()
           .trim()
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvidePassword
-          )
+          .required(t("registerForm.errors.validation.mustProvidePassword"))
           .min(
             constants.VALIDATION.minimumLengthOfPassword,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .minimumLengthOfPassword
+            t("registerForm.errors.validation.minimumLengthOfPassword", {
+              count: constants.VALIDATION.minimumLengthOfPassword
+            })
           )
           .max(
             constants.VALIDATION.maximumLengthOfPassword,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .maximumLengthOfPassword
+            t("registerForm.errors.validation.maximumLengthOfPassword", {
+              count: constants.VALIDATION.maximumLengthOfPassword
+            })
           )
           .matches(
             constants.REGEXES.containsUppercase,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneUppercase
+            t("registerForm.errors.validation.passwordMustContainOneUppercase")
           )
           .matches(
             constants.REGEXES.containsLowercase,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneLowercase
+            t("registerForm.errors.validation.passwordMustContainOneLowercase")
           )
           .matches(
             constants.REGEXES.containsDigit,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneDigit
+            t("registerForm.errors.validation.passwordMustContainOneDigit")
           )
       })}
     />
@@ -95,7 +88,7 @@ const LoginForm = ({ translations }) => {
 };
 
 LoginForm.propTypes = {
-  translations: object.isRequired
+  t: func.isRequired
 };
 
 export default LoginForm;

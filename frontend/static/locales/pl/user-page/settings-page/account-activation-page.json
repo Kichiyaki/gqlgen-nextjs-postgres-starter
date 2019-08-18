@@ -1,0 +1,25 @@
+{
+  "title": "Aktywacja konta",
+  "activateAccount": "Aktywuj konto",
+  "activateAccountForm": {
+    "errors": {
+      "validation": {
+        "mustProvideToken": "Musisz wprowadzić token.",
+        "tokenIsInvalid": "Wprowadziłeś niepoprawny token."
+      },
+      "default": "Nie udało się zaaktywować konta, prosimy spróbować później."
+    },
+    "inputLabels": {
+      "token": "Token"
+    },
+    "success": "Konto zostało pomyślnie zaaktywowane",
+    "submitButton": "Aktywuj konto"
+  },
+  "generateNewActivationTokenForm": {
+    "errors": {
+      "default": "Nie udało się wygenerować nowego tokena aktywacyjnego, prosimy spróbować później."
+    },
+    "success": "Token aktywacyjny został wysłany na konto email.",
+    "submitButton": "Wygeneruj nowy token aktywacyjny"
+  }
+}

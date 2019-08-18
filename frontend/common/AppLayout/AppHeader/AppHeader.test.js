@@ -4,10 +4,10 @@ import { ToastContainer } from "react-toastify";
 
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
+import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
 import { users } from "@utils/test_utils/seed";
-import TranslationProvider from "@lib/i18n/Provider";
-import plTranslation from "@lib/i18n/translations/pl";
 import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
+import common from "@static/locales/pl/common.json";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import { LOGOUT_USER_MUTATION } from "./mutations";
 import constants from "./constants";
@@ -18,12 +18,12 @@ const renderHeader = (mocks = [], user = undefined) => {
   return {
     ...render(
       <MockRouter>
-        <ApolloProvider client={client}>
-          <TranslationProvider locale="pl">
+        <MockI18nextProvider>
+          <ApolloProvider client={client}>
             <AppHeader />
             <ToastContainer />
-          </TranslationProvider>
-        </ApolloProvider>
+          </ApolloProvider>
+        </MockI18nextProvider>
       </MockRouter>
     ),
     client
@@ -34,17 +34,34 @@ describe("AppHeader", () => {
   test("should render header when user is logged out correctly", () => {
     const { asFragment, queryByTestId, getByText } = renderHeader();
     expect(asFragment()).toMatchSnapshot();
-    expect(getByText(plTranslation.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
     expect(queryByTestId(constants.LOGOUT_BUTTON)).not.toBeInTheDocument();
   });
 
   test("should render header when user is logged in correctly", () => {
     const { asFragment, getByTestId, getByText } = renderHeader([], users[0]);
     expect(asFragment()).toMatchSnapshot();
-    expect(getByText(plTranslation.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
     expect(getByTestId(constants.LOGOUT_BUTTON)).toBeInTheDocument();
     expect(getByTestId(constants.LOGOUT_BUTTON)).toHaveTextContent(
-      plTranslation.APPLICATION.header.buttons.logout
+      common.HEADER.buttons.logout
+    );
+  });
+
+  test("should render header when user is logged in and has a deactivated account correctly", () => {
+    const { asFragment, getByTestId, getByText } = renderHeader(
+      [],
+      users.find(user => !user.activated)
+    );
+    expect(asFragment()).toMatchSnapshot();
+    expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
+    expect(getByText(common.HEADER.links.activateAccount)).toBeInTheDocument();
+    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
+    expect(getByTestId(constants.LOGOUT_BUTTON)).toBeInTheDocument();
+    expect(getByTestId(constants.LOGOUT_BUTTON)).toHaveTextContent(
+      common.HEADER.buttons.logout
     );
   });
 
@@ -76,9 +93,7 @@ describe("AppHeader", () => {
     fireEvent.click(getByTestId(constants.LOGOUT_BUTTON));
 
     await wait(() => {
-      expect(
-        getByText(plTranslation.APPLICATION.header.logout.success)
-      ).toBeInTheDocument();
+      expect(getByText(common.HEADER.logout.success)).toBeInTheDocument();
     });
   });
 });

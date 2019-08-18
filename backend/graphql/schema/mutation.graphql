@@ -4,6 +4,7 @@ type Mutation {
   logout: String
   generateNewActivationTokenForCurrentUser: String
   activateUserAccount(id: Int!, token: String!): User
+  generateNewResetPasswordToken(email: String!): String
 
   updateUser(id: Int!, user: UserInput!): User
   deleteUsers(ids: [Int!]): [User!]

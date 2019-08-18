@@ -16,6 +16,7 @@
           "@lib": "./lib",
           "@i18n": "./i18n",
           "@services": "./services",
+          "@static": "./static",
           "@utils": "./utils"
         }
       }

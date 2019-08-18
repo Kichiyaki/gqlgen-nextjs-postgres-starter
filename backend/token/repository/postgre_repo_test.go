@@ -46,8 +46,8 @@ func TestPostgreRepo(t *testing.T) {
 		seedPostgreDB(repo)
 		filter := &models.TokenFilter{
 			CreatedAt: "gt__" + time.Now().Add(-2*time.Hour).Format("2006-01-02 15:04:05"),
-			Type:      tokens[0].Type,
-			Value:     tokens[0].Value,
+			Type:      "eq__" + tokens[0].Type,
+			Value:     "eq__" + tokens[0].Value,
 		}
 
 		ts, err := repo.Fetch(context.Background(), pgfilter.New(filter.ToMap()))
@@ -111,7 +111,7 @@ func newPostgreConn() *postgre.Database {
 	cfg := postgre.
 		NewConfig().
 		SetApplicationName("postgre-tests").
-		SetDBName("tribalwars-api-tests").
+		SetDBName("database-for-tests").
 		SetURI(os.Getenv("POSTGRE_URI")).
 		SetUser(os.Getenv("POSTGRE_USER")).
 		SetPassword(os.Getenv("POSTGRE_PASSWORD"))

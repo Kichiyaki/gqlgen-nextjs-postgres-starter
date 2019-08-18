@@ -1,3 +1,3 @@
-import { UserOptionsAccountActivationPage } from "@features/UserPage";
+import { UserSettingsAccountActivationPage } from "@features/UserPage";
 
-export default UserOptionsAccountActivationPage;
+export default UserSettingsAccountActivationPage;

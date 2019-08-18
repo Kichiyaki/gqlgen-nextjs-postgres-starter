@@ -1,34 +1,22 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
+import i18n from "i18next";
 
 import AccountActivationPage from "./AccountActivationPage";
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
-import TranslationProvider from "@lib/i18n/Provider";
-import translations from "@lib/i18n/translations/pl";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { users } from "@utils/test_utils/seed";
-import accountActivationPageConstants from "./constants";
+import pageConstants from "./constants";
 
-const {
-  USER_PAGE: {
-    SETTINGS_PAGE: { ACCOUNT_ACTIVATION_PAGE }
-  }
-} = translations;
+const t = i18n.getFixedT(null, pageConstants.NAMESPACE);
 
 const renderPage = (mocks = []) => {
   const client = createClient({ mocks, user: users[0] });
   return {
     ...render(
-      <MockRouter>
-        <ApolloProvider client={client}>
-          <TranslationProvider locale="pl">
-            <AccountActivationPage />
-            <ToastContainer />
-          </TranslationProvider>
-        </ApolloProvider>
-      </MockRouter>
+      <TestLayout client={client}>
+        <AccountActivationPage />
+      </TestLayout>
     ),
     client
   };
@@ -39,13 +27,11 @@ describe("AccountActivationPage", () => {
     const { asFragment, getByTestId, getByText } = renderPage();
     expect(asFragment()).toMatchSnapshot();
     expect(
-      getByTestId(
-        accountActivationPageConstants.GENERATE_NEW_ACTIVATION_TOKEN_BUTTON_TESTID
-      )
+      getByTestId(pageConstants.GENERATE_NEW_ACTIVATION_TOKEN_BUTTON_TESTID)
     ).toBeInTheDocument();
     expect(
-      getByTestId(accountActivationPageConstants.ACTIVATE_ACCOUNT_FORM)
+      getByTestId(pageConstants.ACTIVATE_ACCOUNT_FORM)
     ).toBeInTheDocument();
-    expect(getByText(ACCOUNT_ACTIVATION_PAGE.title)).toBeInTheDocument();
+    expect(getByText(t("title"))).toBeInTheDocument();
   });
 });

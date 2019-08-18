@@ -3,26 +3,35 @@
 ## Example config file (cmd/serve/config.json)
 
 ```
+{
   "application": {
-    "port": 8080
+    "port": 8080,
+    "frontend": "http://localhost:3000",
+    "name": "graphql-starter"
   },
   "database": {
-    "uri": -,
+    "uri": "127.0.0.1",
     "username": "postgres",
-    "password": -,
-    "name": -,
-    "port": "5432",
-    "applicationName": -
+    "password": "",
+    "name": "graphql-starter",
+    "port": "5432"
   },
   "email": {
     "uri": "smtp.gmail.com",
     "port": 587,
-    "username": -,
-    "password": -,
-    "address": "-
+    "username": "example@gmail.com",
+    "password": "passwordf123",
+    "address": "example@gmail.com"
   },
   "session": {
-    "name": -,
-    "secretKey": -
+    "name": "graphql-starter.sess",
+    "secretKey": "key",
+    "store": {
+      "address": "127.0.0.1:6379",
+      "password": "",
+      "db": 0
+    }
   }
+}
+
 ```

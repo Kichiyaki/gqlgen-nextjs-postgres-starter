@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/kichiyaki/graphql-starter/backend/middleware"
+	"github.com/kichiyaki/graphql-starter/backend/utils"
+
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
 	"github.com/gosimple/slug"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/postgre"
 	"github.com/kichiyaki/graphql-starter/backend/user"
-	"github.com/kichiyaki/graphql-starter/backend/user/errors"
 	pgfilter "github.com/kichiyaki/pg-filter"
 	pgpagination "github.com/kichiyaki/pg-pagination"
 	"golang.org/x/crypto/bcrypt"
@@ -29,16 +31,17 @@ func NewPostgreUserRepository(conn *postgre.Database) (user.Repository, error) {
 }
 
 func (repo *postgreUserRepo) Store(ctx context.Context, u *models.User) error {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	err := repo.conn.Insert(u)
 	if err != nil {
 		if strings.Contains(err.Error(), postgre.DuplicateKeyValueMsg) {
 			if strings.Contains(err.Error(), "login") {
-				return errors.ErrLoginIsOccupied
+				return utils.GetErrorMsg(localizer, "ErrLoginIsOccupied")
 			} else if strings.Contains(err.Error(), "email") {
-				return errors.ErrEmailIsOccupied
+				return utils.GetErrorMsg(localizer, "ErrEmailIsOccupied")
 			}
 		}
-		return errors.ErrUserCannotBeCreated
+		return utils.GetErrorMsg(localizer, "ErrUserCannotBeCreated")
 	}
 	s := slug.MakeLang(fmt.Sprintf("%d-%s", u.ID, u.Login), "pl")
 	_, err = repo.
@@ -52,33 +55,43 @@ func (repo *postgreUserRepo) Store(ctx context.Context, u *models.User) error {
 }
 
 func (repo *postgreUserRepo) GetByID(ctx context.Context, id int) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	u := &models.User{}
 	repo.conn.Model(u).Where("id = ?", id).First()
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(errors.NotFoundUserByIDErrFormat, id)
+	return nil, utils.GetErrorMsgWithData(localizer, "ErrNotFoundUserByID", map[string]interface{}{
+		"ID": id,
+	})
 }
 
 func (repo *postgreUserRepo) GetBySlug(ctx context.Context, slug string) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	u := &models.User{}
 	repo.conn.Model(u).Where("slug = ?", slug).First()
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(errors.NotFoundUserBySlugErrFormat, slug)
+	return nil, utils.GetErrorMsgWithData(localizer, "ErrNotFoundUserBySlug", map[string]interface{}{
+		"Slug": slug,
+	})
 }
 
 func (repo *postgreUserRepo) GetByEmail(ctx context.Context, email string) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	u := &models.User{}
 	repo.conn.Model(u).Where("email = ?", email).First()
 	if u.ID > 0 {
 		return u, nil
 	}
-	return nil, fmt.Errorf(errors.NotFoundUserByEmailErrFormat, email)
+	return nil, utils.GetErrorMsgWithData(localizer, "ErrNotFoundUserByEmail", map[string]interface{}{
+		"Email": email,
+	})
 }
 
 func (repo *postgreUserRepo) GetByCredentials(ctx context.Context, login, password string) (*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	u := &models.User{}
 	repo.
 		conn.
@@ -88,16 +101,17 @@ func (repo *postgreUserRepo) GetByCredentials(ctx context.Context, login, passwo
 	if u.ID > 0 {
 		err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
 		if err != nil {
-			return u, errors.ErrInvalidLoginOrPassword
+			return u, utils.GetErrorMsg(localizer, "ErrInvalidLoginOrPassword")
 		}
 		return u, nil
 	}
-	return nil, errors.ErrInvalidLoginOrPassword
+	return nil, utils.GetErrorMsg(localizer, "ErrInvalidLoginOrPassword")
 }
 
 func (repo *postgreUserRepo) Fetch(ctx context.Context,
 	p pgpagination.Pagination,
 	f *pgfilter.Filter) (*models.List, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	list := models.List{}
 	users := []*models.User{}
 
@@ -113,7 +127,7 @@ func (repo *postgreUserRepo) Fetch(ctx context.Context,
 
 	count, err := q.Apply(p.Paginate).SelectAndCount()
 	if err != nil && err != pg.ErrNoRows {
-		return nil, errors.ErrListOfUsersCannotBeGenerated
+		return nil, utils.GetErrorMsg(localizer, "ErrListOfUsersCannotBeGenerated")
 	}
 	list.Items = users
 	list.Total = count
@@ -122,6 +136,7 @@ func (repo *postgreUserRepo) Fetch(ctx context.Context,
 }
 
 func (repo *postgreUserRepo) Update(ctx context.Context, u *models.User) error {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	_, err := repo.
 		conn.
 		Model(u).
@@ -131,20 +146,18 @@ func (repo *postgreUserRepo) Update(ctx context.Context, u *models.User) error {
 	if err != nil {
 		if strings.Contains(err.Error(), postgre.DuplicateKeyValueMsg) {
 			if strings.Contains(err.Error(), "login") {
-				return errors.ErrLoginIsOccupied
+				return utils.GetErrorMsg(localizer, "ErrLoginIsOccupied")
 			} else if strings.Contains(err.Error(), "email") {
-				return errors.ErrEmailIsOccupied
+				return utils.GetErrorMsg(localizer, "ErrEmailIsOccupied")
 			}
 		}
-		if u.Login != "" {
-			return fmt.Errorf(errors.UserCannotBeUpdatedErrFormatWithLogin, u.Login)
-		}
-		return fmt.Errorf(errors.UserCannotBeUpdatedErrFormatWithID, u.ID)
+		return utils.GetErrorMsg(localizer, "ErrUserCannotBeUpdated")
 	}
 	return nil
 }
 
 func (repo *postgreUserRepo) Delete(ctx context.Context, ids []int) ([]*models.User, error) {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
 	users := []*models.User{}
 
 	_, err := repo.conn.Model(&users).
@@ -152,7 +165,7 @@ func (repo *postgreUserRepo) Delete(ctx context.Context, ids []int) ([]*models.U
 		Returning("*").
 		Delete()
 	if err != nil {
-		return nil, errors.ErrUsersCannotBeDeleted
+		return nil, utils.GetErrorMsg(localizer, "ErrUsersCannotBeDeleted")
 	}
 
 	return users, err

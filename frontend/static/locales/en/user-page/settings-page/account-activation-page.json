@@ -1,0 +1,25 @@
+{
+  "title": "Account Activation",
+  "activateAccount": "Activate",
+  "activateAccountForm": {
+    "errors": {
+      "validation": {
+        "mustProvideToken": "Token is required.",
+        "tokenIsInvalid": "Invalid token."
+      },
+      "default": "Account cannot be activated, please try again later."
+    },
+    "inputLabels": {
+      "token": "Token"
+    },
+    "success": "Account has been successfully activated.",
+    "submitButton": "Activate account"
+  },
+  "generateNewActivationTokenForm": {
+    "errors": {
+      "default": "Unknow error, please try again later."
+    },
+    "success": "Activation token has been sent to your email.",
+    "submitButton": "Generate new activation token"
+  }
+}

@@ -9,6 +9,7 @@ import (
 
 const (
 	AccountActivationTokenType = "activate_account"
+	ResetPasswordTokenType     = "reset_password"
 )
 
 type Token struct {

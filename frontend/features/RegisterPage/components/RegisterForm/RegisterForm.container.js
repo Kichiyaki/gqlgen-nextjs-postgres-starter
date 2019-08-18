@@ -1,5 +1,5 @@
 import React from "react";
-import { object } from "prop-types";
+import { func } from "prop-types";
 import { useMutation } from "@apollo/react-hooks";
 import { Formik } from "formik";
 import * as Yup from "yup";
@@ -12,7 +12,7 @@ import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import registerPageConstants from "../../constants";
 
-const RegisterForm = ({ translations }) => {
+const RegisterForm = ({ t }) => {
   const [signupMutation] = useMutation(SIGNUP_MUTATION);
 
   const handleSubmit = async (values, { resetForm, setSubmitting }) => {
@@ -25,14 +25,12 @@ const RegisterForm = ({ translations }) => {
         awaitRefetchQueries: true
       });
       resetForm();
-      showSuccessMessage(translations.REGISTER_PAGE.registerForm.success);
+      showSuccessMessage(t("registerForm.success"));
     } catch (error) {
       if (error.graphQLErrors && error.graphQLErrors[0]) {
         showErrorMessage(error.graphQLErrors[0].message);
       } else {
-        showErrorMessage(
-          translations.REGISTER_PAGE.registerForm.errors.default
-        );
+        showErrorMessage(t("registerForm.errors.default"));
       }
     }
     setSubmitting(false);
@@ -46,85 +44,68 @@ const RegisterForm = ({ translations }) => {
         password: "",
         passwordConfirmation: ""
       }}
-      render={formikProps => (
-        <RegisterFormCmp {...formikProps} translations={translations} />
-      )}
+      render={formikProps => <RegisterFormCmp {...formikProps} t={t} />}
       onSubmit={handleSubmit}
       validationSchema={Yup.object().shape({
         login: Yup.string()
           .trim()
           .min(
             constants.VALIDATION.minimumLengthOfLogin,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .minimumLengthOfLogin
+            t("registerForm.errors.validation.minimumLengthOfLogin", {
+              count: constants.VALIDATION.minimumLengthOfLogin
+            })
           )
           .max(
             constants.VALIDATION.maximumLengthOfLogin,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .maximumLengthOfLogin
+            t("registerForm.errors.validation.maximumLengthOfLogin", {
+              count: constants.VALIDATION.maximumLengthOfLogin
+            })
           )
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvideLogin
-          ),
+          .required(t("registerForm.errors.validation.mustProvideLogin")),
         email: Yup.string()
           .trim()
-          .email(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .invalidEmail
-          )
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvideEmail
-          ),
+          .email(t("registerForm.errors.validation.invalidEmail"))
+          .required(t("registerForm.errors.validation.mustProvideEmail")),
         password: Yup.string()
           .trim()
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvidePassword
-          )
+          .required(t("registerForm.errors.validation.mustProvidePassword"))
           .min(
             constants.VALIDATION.minimumLengthOfPassword,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .minimumLengthOfPassword
+            t("registerForm.errors.validation.minimumLengthOfPassword", {
+              count: constants.VALIDATION.minimumLengthOfPassword
+            })
           )
           .max(
             constants.VALIDATION.maximumLengthOfPassword,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .maximumLengthOfPassword
+            t("registerForm.errors.validation.maximumLengthOfPassword", {
+              count: constants.VALIDATION.maximumLengthOfPassword
+            })
           )
           .matches(
             constants.REGEXES.containsUppercase,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneUppercase
+            t("registerForm.errors.validation.passwordMustContainOneUppercase")
           )
           .matches(
             constants.REGEXES.containsLowercase,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneLowercase
+            t("registerForm.errors.validation.passwordMustContainOneLowercase")
           )
           .matches(
             constants.REGEXES.containsDigit,
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordMustContainsOneDigit
+            t("registerForm.errors.validation.passwordMustContainOneDigit")
           ),
         passwordConfirmation: Yup.string()
           .oneOf(
             [Yup.ref("password"), null],
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .passwordsAreNotTheSame
+            t("registerForm.errors.validation.passwordsAreNotTheSame")
           )
-          .required(
-            translations.REGISTER_PAGE.registerForm.errors.validation
-              .mustProvidePassword
-          )
+          .required(t("registerForm.errors.validation.mustProvidePassword"))
       })}
     />
   );
 };
 
 RegisterForm.propTypes = {
-  translations: object.isRequired
+  t: func.isRequired
 };
 
 export default RegisterForm;

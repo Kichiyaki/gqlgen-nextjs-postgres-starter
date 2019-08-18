@@ -2,6 +2,7 @@ import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
 import { omit } from "lodash";
+import i18n from "i18next";
 
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import { SIGNUP_MUTATION } from "../../mutations";
@@ -13,7 +14,8 @@ import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import registerPageConstants from "../../constants";
-import translations from "@lib/i18n/translations/pl";
+
+const t = i18n.getFixedT(null, registerPageConstants.NAMESPACE);
 
 const renderRegisterForm = (mocks = []) => {
   const client = createClient({ mocks });
@@ -21,7 +23,7 @@ const renderRegisterForm = (mocks = []) => {
     ...render(
       <MockRouter>
         <ApolloProvider client={client}>
-          <RegisterForm translations={translations} />
+          <RegisterForm t={t} />
           <ToastContainer />
         </ApolloProvider>
       </MockRouter>
@@ -41,17 +43,13 @@ describe("RegisterForm", () => {
 
     await wait(() =>
       expect(
-        getAllByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .mustProvidePassword
-        )
+        getAllByText(t("registerForm.errors.validation.mustProvidePassword"))
       ).toHaveLength(2)
     );
 
     [
-      translations.REGISTER_PAGE.registerForm.errors.validation
-        .mustProvideLogin,
-      translations.REGISTER_PAGE.registerForm.errors.validation.mustProvideEmail
+      t("registerForm.errors.validation.mustProvideLogin"),
+      t("registerForm.errors.validation.mustProvideEmail")
     ].forEach(text => {
       expect(getByText(text)).toBeInTheDocument();
     });
@@ -73,8 +71,9 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .minimumLengthOfLogin
+          t("registerForm.errors.validation.minimumLengthOfLogin", {
+            count: constants.VALIDATION.minimumLengthOfLogin
+          })
         )
       ).toBeInTheDocument()
     );
@@ -97,8 +96,9 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .maximumLengthOfLogin
+          t("registerForm.errors.validation.maximumLengthOfLogin", {
+            count: constants.VALIDATION.maximumLengthOfLogin
+          })
         )
       ).toBeInTheDocument()
     );
@@ -116,9 +116,7 @@ describe("RegisterForm", () => {
 
     await wait(() =>
       expect(
-        getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation.invalidEmail
-        )
+        getByText(t("registerForm.errors.validation.invalidEmail"))
       ).toBeInTheDocument()
     );
   });
@@ -141,8 +139,9 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .minimumLengthOfPassword
+          t("registerForm.errors.validation.minimumLengthOfPassword", {
+            count: constants.VALIDATION.minimumLengthOfPassword
+          })
         )
       ).toBeInTheDocument()
     );
@@ -165,8 +164,9 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .maximumLengthOfPassword
+          t("registerForm.errors.validation.maximumLengthOfPassword", {
+            count: constants.VALIDATION.maximumLengthOfPassword
+          })
         )
       ).toBeInTheDocument()
     );
@@ -185,8 +185,7 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .passwordMustContainsOneLowercase
+          t("registerForm.errors.validation.passwordMustContainOneLowercase")
         )
       ).toBeInTheDocument()
     );
@@ -205,8 +204,7 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .passwordMustContainsOneUppercase
+          t("registerForm.errors.validation.passwordMustContainOneUppercase")
         )
       ).toBeInTheDocument()
     );
@@ -225,8 +223,7 @@ describe("RegisterForm", () => {
     await wait(() =>
       expect(
         getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .passwordMustContainsOneDigit
+          t("registerForm.errors.validation.passwordMustContainOneDigit")
         )
       ).toBeInTheDocument()
     );
@@ -247,10 +244,7 @@ describe("RegisterForm", () => {
 
     await wait(() =>
       expect(
-        getByText(
-          translations.REGISTER_PAGE.registerForm.errors.validation
-            .passwordsAreNotTheSame
-        )
+        getByText(t("registerForm.errors.validation.passwordsAreNotTheSame"))
       ).toBeInTheDocument()
     );
   });
@@ -307,9 +301,7 @@ describe("RegisterForm", () => {
     fireEvent.submit(getByTestId(registerPageConstants.REGISTER_FORM));
 
     await wait(() =>
-      expect(
-        getByText(translations.REGISTER_PAGE.registerForm.success)
-      ).toBeInTheDocument()
+      expect(getByText(t("registerForm.success"))).toBeInTheDocument()
     );
   });
 });
