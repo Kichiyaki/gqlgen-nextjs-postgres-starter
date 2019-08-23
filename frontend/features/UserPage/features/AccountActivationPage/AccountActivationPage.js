@@ -1,7 +1,6 @@
-import React, { useRef } from "react";
-import { isNil } from "lodash";
+import React, { useEffect } from "react";
 import Router, { useRouter } from "next/router";
-import { Query } from "react-apollo";
+import { useApolloClient } from "react-apollo";
 import ClipLoader from "react-spinners/ClipLoader";
 import isUUID from "validator/lib/isUUID";
 
@@ -13,48 +12,41 @@ import { useTranslation } from "@lib/i18n/i18n";
 import pageConstants from "./constants";
 
 const AccountActivationPage = () => {
-  const called = useRef(false);
   const { query, push } = useRouter();
   const { t } = useTranslation(pageConstants.NAMESPACE);
+  const client = useApolloClient();
 
-  const handleCompleted = ({ activateUserAccount }) => {
-    if (!isNil(activateUserAccount)) {
+  useEffect(() => {
+    if (window) {
+      fetchData();
+    }
+  }, [query]);
+
+  const fetchData = async () => {
+    try {
+      const {
+        data: { activateUserAccount }
+      } = await client.query({
+        query: ACTIVATE_USER_ACCOUNT_QUERY,
+        variables: { id: parseInt(query.id), token: query.token },
+        fetchPolicy: "no-cache"
+      });
       showSuccessMessage(t("success", { login: activateUserAccount.login }));
-    } else {
-      showErrorMessage(t("errors.default"));
+      push(constants.ROUTES.root);
+    } catch ({ graphQLErrors }) {
+      if (graphQLErrors) {
+        showErrorMessage(graphQLErrors[0].message);
+      } else {
+        showErrorMessage(t("errors.default"));
+      }
+      push(constants.ROUTES.root);
     }
-    push(constants.ROUTES.root);
-  };
-
-  const handleError = ({ graphQLErrors }) => {
-    if (called.current) return;
-    called.current = true;
-
-    if (graphQLErrors) {
-      showErrorMessage(graphQLErrors[0].message);
-    } else {
-      showErrorMessage(t("errors.default"));
-    }
-    push(constants.ROUTES.root);
   };
 
   return (
-    <Query
-      query={ACTIVATE_USER_ACCOUNT_QUERY}
-      variables={{ id: parseInt(query.id), token: query.token }}
-      onCompleted={handleCompleted}
-      onError={handleError}
-      ssr={false}
-      fetchPolicy="network-only"
-    >
-      {() => {
-        return (
-          <AppLayout gridProps={{ justify: "center", align: "center" }}>
-            <ClipLoader size={250} />
-          </AppLayout>
-        );
-      }}
-    </Query>
+    <AppLayout gridProps={{ justify: "center", align: "center" }}>
+      <ClipLoader size={250} />
+    </AppLayout>
   );
 };
 

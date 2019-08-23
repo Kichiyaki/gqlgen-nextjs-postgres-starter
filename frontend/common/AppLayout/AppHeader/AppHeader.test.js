@@ -1,12 +1,9 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
-import MockI18nextProvider from "@utils/test_utils/MockI18nextProvider";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { users } from "@utils/test_utils/seed";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import common from "@static/locales/pl/common.json";
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import { LOGOUT_USER_MUTATION } from "./mutations";
@@ -17,14 +14,9 @@ const renderHeader = (mocks = [], user = undefined) => {
   const client = createClient({ mocks, user });
   return {
     ...render(
-      <MockRouter>
-        <MockI18nextProvider>
-          <ApolloProvider client={client}>
-            <AppHeader />
-            <ToastContainer />
-          </ApolloProvider>
-        </MockI18nextProvider>
-      </MockRouter>
+      <TestLayout client={client}>
+        <AppHeader />
+      </TestLayout>
     ),
     client
   };
@@ -32,10 +24,15 @@ const renderHeader = (mocks = [], user = undefined) => {
 
 describe("AppHeader", () => {
   test("should render header when user is logged out correctly", () => {
-    const { asFragment, queryByTestId, getByText } = renderHeader();
+    const {
+      asFragment,
+      queryByTestId,
+      getByText,
+      queryByText
+    } = renderHeader();
     expect(asFragment()).toMatchSnapshot();
     expect(getByText(common.APPLICATION.name)).toBeInTheDocument();
-    expect(getByText(common.HEADER.buttons.logout)).toBeInTheDocument();
+    expect(queryByText(common.HEADER.buttons.logout)).not.toBeInTheDocument();
     expect(queryByTestId(constants.LOGOUT_BUTTON)).not.toBeInTheDocument();
   });
 

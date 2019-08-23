@@ -1,10 +1,10 @@
 import "react-toastify/dist/ReactToastify.min.css";
 import React from "react";
 import App, { Container } from "next/app";
+import { ApolloProvider } from "react-apollo";
 import { ToastContainer } from "react-toastify";
 import withApollo from "../hocs/withApollo";
 import { appWithTranslation } from "../lib/i18n/i18n";
-import ApolloProvider from "../common/ApolloProvider/ApolloProvider";
 
 class MyApp extends App {
   static async getInitialProps({ Component, ctx }) {

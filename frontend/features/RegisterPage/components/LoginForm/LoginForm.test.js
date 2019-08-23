@@ -1,6 +1,7 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
+import { ApolloProvider } from "react-apollo";
 import i18n from "i18next";
 
 import constants from "@config/constants";
@@ -10,7 +11,6 @@ import LoginForm from "./LoginForm.container";
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
 import { users } from "@utils/test_utils/seed";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import registerPageConstants from "../../constants";
 

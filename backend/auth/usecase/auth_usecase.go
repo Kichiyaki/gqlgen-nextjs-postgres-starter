@@ -128,9 +128,9 @@ func (ucase *authUsecase) Activate(ctx context.Context, id int, token string) (*
 	}
 
 	filter := &models.TokenFilter{
-		Type:   models.AccountActivationTokenType,
-		Value:  token,
-		UserID: fmt.Sprint(id),
+		Type:   "eq__" + models.AccountActivationTokenType,
+		Value:  "eq__" + token,
+		UserID: "eq__" + fmt.Sprint(id),
 	}
 	tokens, err := ucase.cfg.TokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
 	if err != nil {
@@ -194,7 +194,7 @@ func (ucase *authUsecase) GenerateNewActivationToken(ctx context.Context, id int
 		ucase.cfg.Email.Send(email.
 			NewEmailConfig().
 			SetTo([]string{user.Email}).
-			SetBody(fmt.Sprintf("<p>Token: %s</p>, URL: %s/%d/reset-password/%s",
+			SetBody(fmt.Sprintf("<p>Token: %s</p>, URL: %s/%d/activate/%s",
 				token.Value,
 				ucase.cfg.FrontendURL,
 				user.ID,
@@ -222,8 +222,8 @@ func (ucase *authUsecase) GenerateNewResetPasswordToken(ctx context.Context, ema
 		return err
 	}
 	filter := &models.TokenFilter{
-		Type:   models.ResetPasswordTokenType,
-		UserID: fmt.Sprint(user.ID),
+		Type:   "eq__" + models.ResetPasswordTokenType,
+		UserID: "eq__" + fmt.Sprint(user.ID),
 	}
 	tokens, err := ucase.cfg.TokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
 	if err != nil {
@@ -263,9 +263,9 @@ func (ucase *authUsecase) ResetPassword(ctx context.Context, id int, token strin
 		return err
 	}
 	filter := &models.TokenFilter{
-		Type:   models.ResetPasswordTokenType,
-		Value:  token,
-		UserID: fmt.Sprint(id),
+		Type:   "eq__" + models.ResetPasswordTokenType,
+		Value:  "eq__" + token,
+		UserID: "eq__" + fmt.Sprint(id),
 	}
 	tokens, err := ucase.cfg.TokenRepo.Fetch(ctx, pgfilter.New(filter.ToMap()))
 	if err != nil {
