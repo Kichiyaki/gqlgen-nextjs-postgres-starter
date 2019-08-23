@@ -2,12 +2,12 @@ import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
 import i18n from "i18next";
+import { ApolloProvider } from "react-apollo";
 
 import { GENERATE_NEW_RESET_PASSWORD_TOKEN_MUTATION } from "../../mutations";
 import ResetPasswordModal from "./ResetPasswordModal";
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import constants from "@config/constants";
 import { testID } from "@common/Form/TextField/constants";
 import pageConstants from "../../constants";

@@ -1,5 +1,5 @@
 import React from "react";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "react-apollo";
 import { isNil } from "lodash";
 
 import { makeStyles } from "@material-ui/core/styles";

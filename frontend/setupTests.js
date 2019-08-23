@@ -1,5 +1,5 @@
 import "@testing-library/react/cleanup-after-each";
-import "jest-dom/extend-expect";
+import "@testing-library/jest-dom/extend-expect";
 import "react-act";
 import initializeI18nClient from "@utils/test_utils/initializeI18nClient";
 

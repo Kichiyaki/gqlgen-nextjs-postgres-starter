@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useMutation } from "@apollo/react-hooks";
+import { useMutation } from "react-apollo";
 import isEmail from "validator/lib/isEmail";
 import { bool, func } from "prop-types";
 import Button from "@material-ui/core/Button";

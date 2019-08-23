@@ -1,14 +1,12 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 import i18n from "i18next";
 
 import { ACTIVATE_USER_ACCOUNT_MUTATION } from "../../mutations";
 import ActivateAccountForm from "./ActivateAccountForm.container";
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { users } from "@utils/test_utils/seed";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import pageConstants from "../../constants";
 
@@ -18,12 +16,9 @@ const renderActivateAccountForm = (mocks = []) => {
   const client = createClient({ mocks, user: users[0] });
   return {
     ...render(
-      <MockRouter>
-        <ApolloProvider client={client}>
-          <ActivateAccountForm t={t} />
-          <ToastContainer />
-        </ApolloProvider>
-      </MockRouter>
+      <TestLayout client={client}>
+        <ActivateAccountForm t={t} />
+      </TestLayout>
     ),
     client
   };

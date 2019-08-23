@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useQuery } from "@apollo/react-hooks";
+import { useQuery } from "react-apollo";
 import Router, { useRouter } from "next/router";
 import { isNil } from "lodash";
 import constants from "../config/constants";

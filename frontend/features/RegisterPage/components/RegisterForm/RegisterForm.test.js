@@ -3,6 +3,7 @@ import { render, fireEvent, wait } from "@testing-library/react";
 import { ToastContainer } from "react-toastify";
 import { omit } from "lodash";
 import i18n from "i18next";
+import { ApolloProvider } from "react-apollo";
 
 import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import { SIGNUP_MUTATION } from "../../mutations";
@@ -10,7 +11,6 @@ import RegisterForm from "./RegisterForm.container";
 import createClient from "@utils/test_utils/createClient";
 import MockRouter from "@utils/test_utils/MockRouter";
 import { users } from "@utils/test_utils/seed";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import registerPageConstants from "../../constants";

@@ -1,14 +1,12 @@
 import React from "react";
 import { render, fireEvent, wait } from "@testing-library/react";
-import { ToastContainer } from "react-toastify";
 import i18n from "i18next";
 
 import { GENERATE_NEW_ACTIVATION_TOKEN_FOR_CURRENT_USER } from "../../mutations";
 import GenerateNewActivationTokenForm from "./GenerateNewActivationTokenForm";
 import createClient from "@utils/test_utils/createClient";
-import MockRouter from "@utils/test_utils/MockRouter";
+import TestLayout from "@utils/test_utils/TestLayout";
 import { users } from "@utils/test_utils/seed";
-import ApolloProvider from "@common/ApolloProvider/ApolloProvider";
 import pageConstants from "../../constants";
 
 const t = i18n.getFixedT(null, pageConstants.NAMESPACE);
@@ -17,12 +15,9 @@ const renderGenerateNewActivationTokenForm = (mocks = []) => {
   const client = createClient({ mocks, user: users[0] });
   return {
     ...render(
-      <MockRouter>
-        <ApolloProvider client={client}>
-          <GenerateNewActivationTokenForm t={t} />
-          <ToastContainer />
-        </ApolloProvider>
-      </MockRouter>
+      <TestLayout client={client}>
+        <GenerateNewActivationTokenForm t={t} />
+      </TestLayout>
     ),
     client
   };
