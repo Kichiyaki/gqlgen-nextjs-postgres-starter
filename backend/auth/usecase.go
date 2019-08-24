@@ -15,6 +15,7 @@ type Usecase interface {
 	GenerateNewActivationTokenForCurrentUser(ctx context.Context) error
 	GenerateNewResetPasswordToken(ctx context.Context, emailAddress string) error
 	ResetPassword(ctx context.Context, id int, token string) error
+	ChangePassword(ctx context.Context, currentPassword, newPassword string) error
 	IsLogged(ctx context.Context) bool
 	HasAdministrativePrivileges(ctx context.Context) bool
 	CurrentUser(ctx context.Context) *models.User

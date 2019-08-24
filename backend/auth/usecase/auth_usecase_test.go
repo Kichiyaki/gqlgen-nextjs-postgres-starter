@@ -636,6 +636,46 @@ func TestResetPassword(t *testing.T) {
 	})
 }
 
+func TestChangePassword(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	mockSessStore := new(_sessionsMocks.Store)
+	mockUser := &seed.Users()[0]
+	cfg := &Config{
+		SessStore:       mockSessStore,
+		UserRepo:        mockUserRepo,
+		TokenRepo:       mockTokenRepo,
+		Email:           mockEmail,
+		ApplicationName: "AppName",
+		FrontendURL:     "http://localhost:3000",
+	}
+
+	t.Run("user cannot be logged out", func(t *testing.T) {
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, nil), "", "")
+		require.Equal(t, utils.GetErrorMsg(localizer, "ErrNotLoggedIn"), err)
+	})
+
+	t.Run("current password must be correct", func(t *testing.T) {
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, mockUser), mockUser.Password+"123t", "asdfsT123T")
+		require.Equal(t, utils.GetErrorMsg(localizer, "ErrInvalidCurrentPassword"), err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockUserRepo.
+			On("Update",
+				mock.Anything,
+				mock.AnythingOfType("*models.User")).
+			Return(nil).
+			Once()
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, mockUser), mockUser.Password, "asdfsT123T")
+		require.Equal(t, nil, err)
+	})
+}
+
 func getContext(localizer *i18n.Localizer, user *models.User) context.Context {
 	return middleware.StoreLocalizerInContext(middleware.StoreUserInContext(context.Background(), user), localizer)
 }

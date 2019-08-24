@@ -142,6 +142,19 @@ func (_m *Usecase) ResetPassword(ctx context.Context, id int, token string) erro
 	return r0
 }
 
+func (_m *Usecase) ChangePassword(ctx context.Context, currentPassword, newPassword string) error {
+	ret := _m.Called(ctx, currentPassword, newPassword)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, string) error); ok {
+		r0 = rf(ctx, currentPassword, newPassword)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 func (_m *Usecase) IsLogged(ctx context.Context) bool {
 	ret := _m.Called(ctx)
 

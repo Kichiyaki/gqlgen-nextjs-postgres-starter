@@ -17,6 +17,7 @@ import (
 	"github.com/robfig/cron"
 
 	"github.com/gin-contrib/sessions"
+	ginSessions "github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/handlers"
 	_authUsecase "github.com/kichiyaki/graphql-starter/backend/auth/usecase"
@@ -62,6 +63,13 @@ func main() {
 	})
 	defer redisConn.Close()
 	sessionStore := redisStore.NewRedisStore(redisConn, []byte(viper.GetString("session.secretKey")))
+	sessionStore.Options(ginSessions.Options{
+		Path:     "/",
+		Domain:   "localhost",
+		MaxAge:   int(time.Hour * 24),
+		Secure:   gin.Mode() == gin.ReleaseMode,
+		HttpOnly: true,
+	})
 
 	userRepo, err := _userRepo.NewPostgreUserRepository(conn)
 	if err != nil {

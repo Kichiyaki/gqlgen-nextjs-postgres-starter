@@ -32,7 +32,7 @@ const Navigation = ({ t }) => {
       </Typography>
       <Divider />
       <List component="nav">
-        {!fetchCurrentUser.activated && (
+        {fetchCurrentUser && !fetchCurrentUser.activated && (
           <NavLink
             text={t("accountActivation")}
             href={constants.ROUTES.userPage.settingsPage.accountActivation}

@@ -5,6 +5,7 @@ type Mutation {
   generateNewActivationTokenForCurrentUser: String
   activateUserAccount(id: Int!, token: String!): User
   generateNewResetPasswordToken(email: String!): String
+  changePassword(currentPassword: String!, newPassword: String!): String
 
   updateUser(id: Int!, user: UserInput!): User
   deleteUsers(ids: [Int!]): [User!]

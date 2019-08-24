@@ -23,6 +23,11 @@ type User struct {
 	CreatedAt time.Time
 }
 
+func (u *User) ComparePassword(password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password))
+	return err == nil || u.Password == password
+}
+
 func (u *User) BeforeInsert(c context.Context) (context.Context, error) {
 	if u.CreatedAt.IsZero() {
 		u.CreatedAt = time.Now()

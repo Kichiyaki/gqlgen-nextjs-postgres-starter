@@ -14,7 +14,7 @@ import { users } from "@utils/test_utils/seed";
 import { testID } from "@common/Form/TextField/constants";
 import registerPageConstants from "../../constants";
 
-const t = i18n.getFixedT(null, registerPageConstants.NAMESPACE);
+const t = i18n.getFixedT(null, constants.NAMESPACES.registerPage);
 
 const renderLoginForm = (mocks = []) => {
   const client = createClient({ mocks });

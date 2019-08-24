@@ -13,7 +13,7 @@ import { testID } from "@common/Form/TextField/constants";
 import pageConstants from "../../constants";
 
 let handleClose;
-const t = i18n.getFixedT(null, pageConstants.NAMESPACE);
+const t = i18n.getFixedT(null, constants.NAMESPACES.registerPage);
 
 const renderResetPasswordModal = (mocks = []) => {
   const client = createClient({ mocks });

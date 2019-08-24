@@ -15,7 +15,7 @@ import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import registerPageConstants from "../../constants";
 
-const t = i18n.getFixedT(null, registerPageConstants.NAMESPACE);
+const t = i18n.getFixedT(null, constants.NAMESPACES.registerPage);
 
 const renderRegisterForm = (mocks = []) => {
   const client = createClient({ mocks });
@@ -55,9 +55,7 @@ describe("RegisterForm", () => {
     });
   });
 
-  test(`length of username should be between ${
-    constants.VALIDATION.minimumLengthOfLogin
-  } and ${constants.VALIDATION.maximumLengthOfLogin} characters`, async () => {
+  test(`length of username should be between ${constants.VALIDATION.minimumLengthOfLogin} and ${constants.VALIDATION.maximumLengthOfLogin} characters`, async () => {
     const { getAllByTestId, getByText } = renderRegisterForm();
     let value = "as";
 
@@ -121,11 +119,7 @@ describe("RegisterForm", () => {
     );
   });
 
-  test(`length of password should be between ${
-    constants.VALIDATION.minimumLengthOfPassword
-  } and ${
-    constants.VALIDATION.maximumLengthOfPassword
-  } characters`, async () => {
+  test(`length of password should be between ${constants.VALIDATION.minimumLengthOfPassword} and ${constants.VALIDATION.maximumLengthOfPassword} characters`, async () => {
     const { getAllByTestId, getByText } = renderRegisterForm();
     let value = "asasd";
 
@@ -146,7 +140,11 @@ describe("RegisterForm", () => {
       ).toBeInTheDocument()
     );
 
-    for (let k = 1; k <= 140; k++) {
+    for (
+      let k = 1;
+      k <= constants.VALIDATION.maximumLengthOfPassword + 40;
+      k++
+    ) {
       value += "a";
     }
 
@@ -172,7 +170,7 @@ describe("RegisterForm", () => {
     );
   });
 
-  test("password must contains min. 1 lowercase", async () => {
+  test("password must contains at least 1 lowercase", async () => {
     const { getAllByTestId, getByText } = renderRegisterForm();
 
     getAllByTestId(testID).forEach(el => {
@@ -191,7 +189,7 @@ describe("RegisterForm", () => {
     );
   });
 
-  test("password must contains min. 1 uppercase", async () => {
+  test("password must contains at least 1 uppercase", async () => {
     const { getAllByTestId, getByText } = renderRegisterForm();
 
     getAllByTestId(testID).forEach(el => {
@@ -210,7 +208,7 @@ describe("RegisterForm", () => {
     );
   });
 
-  test("password must contains min. 1 digit", async () => {
+  test("password must contains at least 1 digit", async () => {
     const { getAllByTestId, getByText } = renderRegisterForm();
 
     getAllByTestId(testID).forEach(el => {

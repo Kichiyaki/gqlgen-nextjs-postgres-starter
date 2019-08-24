@@ -83,6 +83,15 @@ func (r *mutationResolver) GenerateNewActivationTokenForCurrentUser(ctx context.
 	return &msg, nil
 }
 
+func (r *mutationResolver) ChangePassword(ctx context.Context, currentPassword string, newPassword string) (*string, error) {
+	if err := r.AuthUcase.ChangePassword(ctx, currentPassword, newPassword); err != nil {
+		return nil, err
+	}
+
+	msg := "Pomyślnie zmieniono hasło"
+	return &msg, nil
+}
+
 func (r *mutationResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
 	return r.AuthUcase.Activate(ctx, id, token)
 }
