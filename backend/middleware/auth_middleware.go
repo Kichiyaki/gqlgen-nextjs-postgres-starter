@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/kichiyaki/graphql-starter/backend/models"
+	sessions "github.com/kichiyaki/sessions/gin-sessions"
 )
 
 func (midd *middleware) AuthMiddleware() gin.HandlerFunc {

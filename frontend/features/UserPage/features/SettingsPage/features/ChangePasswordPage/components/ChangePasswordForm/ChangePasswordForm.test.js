@@ -10,7 +10,6 @@ import { users } from "@utils/test_utils/seed";
 import { testID } from "@common/Form/TextField/constants";
 import constants from "@config/constants";
 import pageConstants from "../../constants";
-import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 
 const t = i18n.getFixedT(null, [
   pageConstants.NAMESPACE,
@@ -226,16 +225,6 @@ describe("ChangePasswordForm", () => {
         result: {
           data: {
             changePassword: "Success"
-          }
-        }
-      },
-      {
-        request: {
-          query: FETCH_CURRENT_USER_QUERY
-        },
-        result: {
-          data: {
-            fetchCurrentUser: null
           }
         }
       }

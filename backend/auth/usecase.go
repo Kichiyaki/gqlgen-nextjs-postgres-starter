@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kichiyaki/graphql-starter/backend/models"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
 )
 
 type Usecase interface {
@@ -19,4 +20,5 @@ type Usecase interface {
 	IsLogged(ctx context.Context) bool
 	HasAdministrativePrivileges(ctx context.Context) bool
 	CurrentUser(ctx context.Context) *models.User
+	Session(ctx context.Context) ginSessions.Session
 }

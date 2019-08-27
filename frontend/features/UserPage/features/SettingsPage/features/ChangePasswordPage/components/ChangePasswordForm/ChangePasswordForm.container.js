@@ -7,7 +7,6 @@ import { func } from "prop-types";
 import constants from "@config/constants";
 import ChangePasswordFormCmp from "./ChangePasswordForm.component";
 import { CHANGE_PASSWORD_MUTATION } from "../../mutations";
-import { FETCH_CURRENT_USER_QUERY } from "@graphql/queries/user.queries";
 import { showErrorMessage, showSuccessMessage } from "@services/toastify";
 import pageConstants from "../../constants";
 
@@ -74,9 +73,7 @@ const ChangePasswordForm = ({ t }) => {
   const handleSubmit = async (payload, { resetForm, setSubmitting }) => {
     try {
       await changePasswordMutation({
-        variables: payload,
-        refetchQueries: [{ query: FETCH_CURRENT_USER_QUERY }],
-        awaitRefetchQueries: true
+        variables: payload
       });
       resetForm();
       showSuccessMessage(t("changePasswordForm.success"));

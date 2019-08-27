@@ -3,8 +3,6 @@ package resolvers
 import (
 	"context"
 
-	"github.com/gin-contrib/sessions"
-	"github.com/kichiyaki/graphql-starter/backend/middleware"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 )
 
@@ -26,11 +24,7 @@ func (r *queryResolver) ResetPassword(ctx context.Context, id int, token string)
 }
 
 func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*models.User, error) {
-	ginCtx, err := middleware.GinContextFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	session := sessions.Default(ginCtx)
+	session := r.AuthUcase.Session(ctx)
 	u, err := r.AuthUcase.Signup(ctx, user)
 	if err != nil {
 		return nil, err
@@ -43,11 +37,7 @@ func (r *mutationResolver) Signup(ctx context.Context, user models.UserInput) (*
 	return u, nil
 }
 func (r *mutationResolver) Login(ctx context.Context, login string, password string) (*models.User, error) {
-	ginCtx, err := middleware.GinContextFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	session := sessions.Default(ginCtx)
+	session := r.AuthUcase.Session(ctx)
 	user, err := r.AuthUcase.Login(ctx, login, password)
 	if err != nil {
 		return nil, err
@@ -60,12 +50,8 @@ func (r *mutationResolver) Login(ctx context.Context, login string, password str
 	return user, nil
 }
 func (r *mutationResolver) Logout(ctx context.Context) (*string, error) {
-	ginCtx, err := middleware.GinContextFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-	session := sessions.Default(ginCtx)
-	session.Set("user", nil)
+	session := r.AuthUcase.Session(ctx)
+	session.Delete("user")
 	if err := session.Save(); err != nil {
 		return nil, err
 	}

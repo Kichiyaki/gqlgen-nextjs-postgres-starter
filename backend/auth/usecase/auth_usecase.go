@@ -8,7 +8,7 @@ import (
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
-	"github.com/kichiyaki/graphql-starter/backend/sessions"
+	"github.com/kichiyaki/sessions"
 
 	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +23,7 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/token"
 	"github.com/kichiyaki/graphql-starter/backend/user"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
 )
 
 const (
@@ -343,10 +344,11 @@ func (ucase *authUsecase) ChangePassword(ctx context.Context, currentPassword, n
 		}
 		go func() {
 			sess, _ := ucase.cfg.SessStore.GetAll()
+			currentUserSession := ucase.Session(ctx)
 			ids := []string{}
 			for _, session := range sess {
 				v := session.Values["user"]
-				if v != nil {
+				if v != nil && session.ID != currentUserSession.Session().ID {
 					id, ok := v.(float64)
 					userID := int(id)
 					if ok {
@@ -361,6 +363,11 @@ func (ucase *authUsecase) ChangePassword(ctx context.Context, currentPassword, n
 		return nil
 	}
 	return utils.GetErrorMsg(localizer, "ErrInvalidCurrentPassword")
+}
+
+func (ucase *authUsecase) Session(ctx context.Context) ginSessions.Session {
+	ginCtx, _ := middleware.GinContextFromContext(ctx)
+	return ginSessions.Default(ginCtx)
 }
 
 func (ucase *authUsecase) IsLogged(ctx context.Context) bool {

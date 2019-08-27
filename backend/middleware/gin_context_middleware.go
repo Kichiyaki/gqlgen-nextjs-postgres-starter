@@ -9,10 +9,14 @@ import (
 
 func (midd *middleware) GinContextToContextMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		ctx := context.WithValue(c.Request.Context(), ginContextKey, c)
+		ctx := StoreGinContextInContext(c.Request.Context(), c)
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
+}
+
+func StoreGinContextInContext(ctx context.Context, c *gin.Context) context.Context {
+	return context.WithValue(ctx, ginContextKey, c)
 }
 
 // GinContextFromContext returns gin context from http context (if exists)

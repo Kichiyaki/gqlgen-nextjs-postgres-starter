@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/kichiyaki/graphql-starter/backend/models"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -194,6 +195,21 @@ func (_m *Usecase) CurrentUser(ctx context.Context) *models.User {
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*models.User)
+		}
+	}
+
+	return r0
+}
+
+func (_m *Usecase) Session(ctx context.Context) ginSessions.Session {
+	ret := _m.Called(ctx)
+
+	var r0 ginSessions.Session
+	if rf, ok := ret.Get(0).(func(context.Context) ginSessions.Session); ok {
+		r0 = rf(ctx)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(ginSessions.Session)
 		}
 	}
 
