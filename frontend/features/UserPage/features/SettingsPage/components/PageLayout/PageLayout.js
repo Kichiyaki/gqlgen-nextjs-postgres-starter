@@ -9,7 +9,7 @@ import Navigation from "../Navigation/Navigation";
 
 const useStyles = makeStyles(theme => ({
   hide: {
-    [theme.breakpoints.down("md")]: {
+    [theme.breakpoints.down("sm")]: {
       display: "none"
     }
   },

@@ -49,7 +49,7 @@ const RegisterPage = () => {
     setIsOpen(false);
   };
 
-  const { t } = useTranslation(pageConstants.NAMESPACE);
+  const { t } = useTranslation(constants.NAMESPACES.registerPage);
 
   return (
     <Container component="main" maxWidth="xs">

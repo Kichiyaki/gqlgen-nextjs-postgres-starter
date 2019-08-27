@@ -28,6 +28,7 @@ export default {
   AUTHOR_FULL_NAME: "Dawid Wysokiński",
   NAMESPACES: {
     common: "common",
+    registerPage: "register-page",
     userPage: {
       settingsPage: {
         navigation: "user-page/settings-page/navigation"

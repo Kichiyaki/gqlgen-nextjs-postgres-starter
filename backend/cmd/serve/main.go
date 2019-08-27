@@ -16,7 +16,6 @@ import (
 
 	"github.com/robfig/cron"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/handlers"
 	_authUsecase "github.com/kichiyaki/graphql-starter/backend/auth/usecase"
@@ -24,11 +23,13 @@ import (
 	_graphqlHandler "github.com/kichiyaki/graphql-starter/backend/graphql/delivery/http"
 	_middleware "github.com/kichiyaki/graphql-starter/backend/middleware"
 	"github.com/kichiyaki/graphql-starter/backend/postgre"
-	redisStore "github.com/kichiyaki/graphql-starter/backend/sessions/redis"
 	_tokenCron "github.com/kichiyaki/graphql-starter/backend/token/cron"
 	_tokenRepo "github.com/kichiyaki/graphql-starter/backend/token/repository"
 	_userRepo "github.com/kichiyaki/graphql-starter/backend/user/repository"
 	_userUsecase "github.com/kichiyaki/graphql-starter/backend/user/usecase"
+	"github.com/kichiyaki/sessions"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
+	redisStore "github.com/kichiyaki/sessions/redis"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/spf13/viper"
 )
@@ -62,6 +63,13 @@ func main() {
 	})
 	defer redisConn.Close()
 	sessionStore := redisStore.NewRedisStore(redisConn, []byte(viper.GetString("session.secretKey")))
+	sessionStore.Options(&sessions.Options{
+		Path:     "/",
+		Domain:   "localhost",
+		MaxAge:   60 * 60 * 24,
+		Secure:   gin.Mode() == gin.ReleaseMode,
+		HttpOnly: true,
+	})
 
 	userRepo, err := _userRepo.NewPostgreUserRepository(conn)
 	if err != nil {
@@ -113,8 +121,7 @@ func main() {
 	bundle.MustLoadMessageFile("../../i18n/locales/active.pl.json")
 	middleware := _middleware.NewMiddleware(userRepo, bundle)
 	router := gin.Default()
-	// store := cookie.NewStore([]byte(viper.GetString("session.secretKey")))
-	router.Use(sessions.Sessions(viper.GetString("session.name"), sessionStore))
+	router.Use(ginSessions.Sessions(viper.GetString("session.name"), sessionStore))
 	router.Use(middleware.GinContextToContextMiddleware())
 	router.Use(middleware.AuthMiddleware())
 	router.Use(middleware.LocalizeMiddleware())

@@ -1,13 +1,16 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"golang.org/x/text/language"
 
-	"github.com/gorilla/sessions"
+	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
 	"github.com/kichiyaki/graphql-starter/backend/middleware"
@@ -16,10 +19,11 @@ import (
 	_emailMock "github.com/kichiyaki/graphql-starter/backend/email/mocks"
 	"github.com/kichiyaki/graphql-starter/backend/models"
 	"github.com/kichiyaki/graphql-starter/backend/seed"
-	_sessionsMocks "github.com/kichiyaki/graphql-starter/backend/sessions/mocks"
 	_tokenMocks "github.com/kichiyaki/graphql-starter/backend/token/mocks"
 	"github.com/kichiyaki/graphql-starter/backend/user/mocks"
 	"github.com/kichiyaki/graphql-starter/backend/utils"
+	"github.com/kichiyaki/sessions"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +38,7 @@ func TestSignup(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	mockUser := &seed.Users()[0]
 	role := models.AdministrativeRole
 	mockInput := models.UserInput{
@@ -54,7 +58,7 @@ func TestSignup(t *testing.T) {
 
 	t.Run("user cannot be logged in", func(t *testing.T) {
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Signup(getContext(localizer, mockUser), mockInput)
+		_, err := usecase.Signup(getContext(localizer, mockUser, nil), mockInput)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrCannotCreateAccountWhileLoggedIn"), err)
 	})
 
@@ -67,7 +71,7 @@ func TestSignup(t *testing.T) {
 			Return(errorReturned).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Signup(getContext(localizer, nil), mockInput)
+		_, err := usecase.Signup(getContext(localizer, nil, nil), mockInput)
 		require.Equal(t, errorReturned, err)
 	})
 
@@ -80,7 +84,7 @@ func TestSignup(t *testing.T) {
 			Return(errorReturned).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Signup(getContext(localizer, nil), mockInput)
+		_, err := usecase.Signup(getContext(localizer, nil, nil), mockInput)
 		require.Equal(t, errorReturned, err)
 	})
 
@@ -88,7 +92,7 @@ func TestSignup(t *testing.T) {
 		mockUserRepo.On("Store", mock.Anything, mock.AnythingOfType("*models.User")).Return(nil).Once()
 		mockTokenRepo.On("Store", mock.Anything, mock.Anything).Return(fmt.Errorf("Error")).Once()
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Signup(getContext(localizer, nil), mockInput)
+		_, err := usecase.Signup(getContext(localizer, nil, nil), mockInput)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrActivationTokenCannotBeCreated"), err)
 	})
 
@@ -97,7 +101,7 @@ func TestSignup(t *testing.T) {
 		mockTokenRepo.On("Store", mock.Anything, mock.Anything).Return(nil).Once()
 		mockEmail.On("Send", mock.Anything, mock.Anything).Return(nil).Once()
 		usecase := NewAuthUsecase(cfg)
-		user, err := usecase.Signup(getContext(localizer, nil), mockInput)
+		user, err := usecase.Signup(getContext(localizer, nil, nil), mockInput)
 		require.Equal(t, nil, err)
 		require.Equal(t, mockUser.Login, user.Login)
 		require.Equal(t, mockUser.Email, user.Email)
@@ -108,7 +112,7 @@ func TestLogin(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	mockUser := &seed.Users()[0]
 	cfg := &Config{
 		SessStore:       mockSessStore,
@@ -121,7 +125,7 @@ func TestLogin(t *testing.T) {
 
 	t.Run("user cannot be logged in", func(t *testing.T) {
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Login(getContext(localizer, mockUser), mockUser.Login, mockUser.Password)
+		_, err := usecase.Login(getContext(localizer, mockUser, nil), mockUser.Login, mockUser.Password)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrCannotLoginWhileLoggedIn"), err)
 	})
 
@@ -129,7 +133,7 @@ func TestLogin(t *testing.T) {
 		mockUserRepo.On("GetByCredentials", mock.Anything, mockUser.Login, mockUser.Password).Return(mockUser, nil).Once()
 
 		usecase := NewAuthUsecase(cfg)
-		user, err := usecase.Login(getContext(localizer, nil), mockUser.Login, mockUser.Password)
+		user, err := usecase.Login(getContext(localizer, nil, nil), mockUser.Login, mockUser.Password)
 		require.Equal(t, nil, err)
 		require.Equal(t, user.Login, mockUser.Login)
 	})
@@ -139,7 +143,7 @@ func TestLogout(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	mockUser := &seed.Users()[0]
 	cfg := &Config{
 		SessStore:       mockSessStore,
@@ -152,13 +156,13 @@ func TestLogout(t *testing.T) {
 
 	t.Run("user cannot be logged out", func(t *testing.T) {
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.Logout(getContext(localizer, nil))
+		err := usecase.Logout(getContext(localizer, nil, nil))
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrNotLoggedIn"), err)
 	})
 
 	t.Run("success", func(t *testing.T) {
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.Logout(getContext(localizer, mockUser))
+		err := usecase.Logout(getContext(localizer, mockUser, nil))
 		require.Equal(t, nil, err)
 	})
 }
@@ -167,7 +171,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	users := seed.Users()
 	cfg := &Config{
 		SessStore:       mockSessStore,
@@ -187,7 +191,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 			Return(&users[0], nil).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationToken(getContext(localizer, nil), id)
+		err := usecase.GenerateNewActivationToken(getContext(localizer, nil, nil), id)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrAccountHasBeenActivated"), err)
 	})
 
@@ -213,7 +217,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationToken(getContext(localizer, nil), id)
+		err := usecase.GenerateNewActivationToken(getContext(localizer, nil, nil), id)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrReachedLimitOfActivationTokens"), err)
 	})
 
@@ -238,7 +242,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationToken(getContext(localizer, nil), id)
+		err := usecase.GenerateNewActivationToken(getContext(localizer, nil, nil), id)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrActivationTokenCannotBeCreated"), err)
 	})
 
@@ -267,7 +271,7 @@ func TestGenerateNewActivationToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationToken(getContext(localizer, nil), id)
+		err := usecase.GenerateNewActivationToken(getContext(localizer, nil, nil), id)
 		require.Equal(t, nil, err)
 	})
 }
@@ -276,7 +280,7 @@ func TestGenerateNewActivationTokenForCurrentUser(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	users := seed.Users()
 	cfg := &Config{
 		SessStore:       mockSessStore,
@@ -289,7 +293,7 @@ func TestGenerateNewActivationTokenForCurrentUser(t *testing.T) {
 
 	t.Run("user cannot be logged out", func(t *testing.T) {
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationTokenForCurrentUser(getContext(localizer, nil))
+		err := usecase.GenerateNewActivationTokenForCurrentUser(getContext(localizer, nil, nil))
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrNotLoggedIn"), err)
 	})
 
@@ -318,7 +322,7 @@ func TestGenerateNewActivationTokenForCurrentUser(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewActivationTokenForCurrentUser(getContext(localizer, &users[1]))
+		err := usecase.GenerateNewActivationTokenForCurrentUser(getContext(localizer, &users[1], nil))
 		require.Equal(t, nil, err)
 	})
 }
@@ -327,7 +331,7 @@ func TestActivate(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	users := seed.Users()
 	tokens := seed.Tokens()
 	cfg := &Config{
@@ -349,7 +353,7 @@ func TestActivate(t *testing.T) {
 			Once()
 		usecase := NewAuthUsecase(cfg)
 		token := uuid.New().String()
-		_, err := usecase.Activate(getContext(localizer, nil), id, token)
+		_, err := usecase.Activate(getContext(localizer, nil, nil), id, token)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrAccountHasBeenActivated"), err)
 	})
 
@@ -369,7 +373,7 @@ func TestActivate(t *testing.T) {
 			Return([]*models.Token{}, nil).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Activate(getContext(localizer, nil), id, tok.Value)
+		_, err := usecase.Activate(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrInvalidActivationToken"), err)
 	})
 
@@ -395,7 +399,7 @@ func TestActivate(t *testing.T) {
 			Return(fmt.Errorf("error")).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		_, err := usecase.Activate(getContext(localizer, nil), id, tok.Value)
+		_, err := usecase.Activate(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrAccountCannotBeActivated"), err)
 	})
 
@@ -435,7 +439,7 @@ func TestActivate(t *testing.T) {
 			Once()
 		mockTokenRepo.On("Delete", mock.Anything, []int{tok.ID}).Return([]*models.Token{&tok}, nil).Once()
 		usecase := NewAuthUsecase(cfg)
-		user, err := usecase.Activate(getContext(localizer, nil), id, tok.Value)
+		user, err := usecase.Activate(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, nil, err)
 		require.Equal(t, true, user.Activated)
 	})
@@ -445,7 +449,7 @@ func TestGenerateNewResetPasswordToken(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	users := seed.Users()
 	email := users[0].Email
 	cfg := &Config{
@@ -478,7 +482,7 @@ func TestGenerateNewResetPasswordToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil), email)
+		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil, nil), email)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrReachedLimitOfResetPasswordTokens"), err)
 	})
 
@@ -502,7 +506,7 @@ func TestGenerateNewResetPasswordToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil), email)
+		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil, nil), email)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrResetPasswordTokenCannotBeCreated"), err)
 	})
 
@@ -530,7 +534,7 @@ func TestGenerateNewResetPasswordToken(t *testing.T) {
 			Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil), email)
+		err := usecase.GenerateNewResetPasswordToken(getContext(localizer, nil, nil), email)
 		require.Equal(t, nil, err)
 	})
 }
@@ -539,7 +543,7 @@ func TestResetPassword(t *testing.T) {
 	mockUserRepo := new(mocks.Repository)
 	mockTokenRepo := new(_tokenMocks.Repository)
 	mockEmail := new(_emailMock.Email)
-	mockSessStore := new(_sessionsMocks.Store)
+	mockSessStore := new(sessions.MockStore)
 	users := seed.Users()
 	tokens := seed.Tokens()
 	id := users[0].ID
@@ -568,7 +572,7 @@ func TestResetPassword(t *testing.T) {
 			Return([]*models.Token{}, nil).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.ResetPassword(getContext(localizer, nil), id, tok.Value)
+		err := usecase.ResetPassword(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrInvalidResetPasswordToken"), err)
 	})
 
@@ -594,7 +598,7 @@ func TestResetPassword(t *testing.T) {
 			Return(fmt.Errorf("error")).
 			Once()
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.ResetPassword(getContext(localizer, nil), id, tok.Value)
+		err := usecase.ResetPassword(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, utils.GetErrorMsg(localizer, "ErrUserCannotBeUpdated"), err)
 	})
 
@@ -631,11 +635,67 @@ func TestResetPassword(t *testing.T) {
 		mockSessStore.On("DeleteByID", mock.AnythingOfType("[]string")).Return(nil).Once()
 
 		usecase := NewAuthUsecase(cfg)
-		err := usecase.ResetPassword(getContext(localizer, nil), id, tok.Value)
+		err := usecase.ResetPassword(getContext(localizer, nil, nil), id, tok.Value)
 		require.Equal(t, nil, err)
 	})
 }
 
-func getContext(localizer *i18n.Localizer, user *models.User) context.Context {
-	return middleware.StoreLocalizerInContext(middleware.StoreUserInContext(context.Background(), user), localizer)
+func TestChangePassword(t *testing.T) {
+	mockUserRepo := new(mocks.Repository)
+	mockTokenRepo := new(_tokenMocks.Repository)
+	mockEmail := new(_emailMock.Email)
+	mockSessStore := new(sessions.MockStore)
+	mockUser := &seed.Users()[0]
+	mockSession := new(ginSessions.MockSession)
+	cfg := &Config{
+		SessStore:       mockSessStore,
+		UserRepo:        mockUserRepo,
+		TokenRepo:       mockTokenRepo,
+		Email:           mockEmail,
+		ApplicationName: "AppName",
+		FrontendURL:     "http://localhost:3000",
+	}
+
+	t.Run("user cannot be logged out", func(t *testing.T) {
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, nil, mockSession), "", "")
+		require.Equal(t, utils.GetErrorMsg(localizer, "ErrNotLoggedIn"), err)
+	})
+
+	t.Run("current password must be correct", func(t *testing.T) {
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, mockUser, mockSession), mockUser.Password+"123t", "asdfsT123T")
+		require.Equal(t, utils.GetErrorMsg(localizer, "ErrInvalidCurrentPassword"), err)
+	})
+
+	t.Run("success", func(t *testing.T) {
+		mockUserRepo.
+			On("Update",
+				mock.Anything,
+				mock.AnythingOfType("*models.User")).
+			Return(nil).
+			Once()
+		mockSessStore.On("GetAll").Return([]*sessions.Session{}, nil).Once()
+		mockSessStore.On("DeleteByID", mock.AnythingOfType("[]string")).Return(nil).Once()
+		mockSession.On("Session").Return(&sessions.Session{ID: "asdsd123"}).Once()
+		usecase := NewAuthUsecase(cfg)
+		err := usecase.ChangePassword(getContext(localizer, mockUser, mockSession), mockUser.Password, "asdfsT123T")
+		require.Equal(t, nil, err)
+	})
+}
+
+func newRecorder() *httptest.ResponseRecorder {
+	return &httptest.ResponseRecorder{
+		HeaderMap: make(http.Header),
+		Body:      new(bytes.Buffer),
+	}
+}
+
+func getContext(localizer *i18n.Localizer, user *models.User, session *ginSessions.MockSession) context.Context {
+	c, _ := gin.CreateTestContext(newRecorder())
+	if session != nil {
+		c.Set(ginSessions.DefaultKey, session)
+	}
+
+	return middleware.StoreLocalizerInContext(middleware.StoreUserInContext(middleware.StoreGinContextInContext(context.Background(), c), user), localizer)
 }

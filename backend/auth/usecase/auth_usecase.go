@@ -8,7 +8,7 @@ import (
 
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 
-	"github.com/kichiyaki/graphql-starter/backend/sessions"
+	"github.com/kichiyaki/sessions"
 
 	"github.com/sethvargo/go-password/password"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +23,7 @@ import (
 	"github.com/kichiyaki/graphql-starter/backend/token"
 	"github.com/kichiyaki/graphql-starter/backend/user"
 	"github.com/kichiyaki/graphql-starter/backend/user/validate"
+	ginSessions "github.com/kichiyaki/sessions/gin-sessions"
 )
 
 const (
@@ -321,6 +322,52 @@ func (ucase *authUsecase) ResetPassword(ctx context.Context, id int, token strin
 	}()
 
 	return nil
+}
+
+func (ucase *authUsecase) ChangePassword(ctx context.Context, currentPassword, newPassword string) error {
+	localizer, _ := middleware.LocalizerFromContext(ctx)
+	if !ucase.IsLogged(ctx) {
+		return utils.GetErrorMsg(localizer, "ErrNotLoggedIn")
+	}
+	user := ucase.CurrentUser(ctx)
+	if user.ComparePassword(currentPassword) {
+		user.Password = newPassword
+		cfg := validate.NewConfig(localizer)
+		cfg.Password = true
+		if err := cfg.Validate(*user); err != nil {
+			return err
+		}
+		hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		user.Password = string(hashedPassword)
+		if err := ucase.cfg.UserRepo.Update(ctx, user); err != nil {
+			return err
+		}
+		go func() {
+			sess, _ := ucase.cfg.SessStore.GetAll()
+			currentUserSession := ucase.Session(ctx)
+			ids := []string{}
+			for _, session := range sess {
+				v := session.Values["user"]
+				if v != nil && session.ID != currentUserSession.Session().ID {
+					id, ok := v.(float64)
+					userID := int(id)
+					if ok {
+						if userID == user.ID {
+							ids = append(ids, session.ID)
+						}
+					}
+				}
+			}
+			ucase.cfg.SessStore.DeleteByID(ids...)
+		}()
+		return nil
+	}
+	return utils.GetErrorMsg(localizer, "ErrInvalidCurrentPassword")
+}
+
+func (ucase *authUsecase) Session(ctx context.Context) ginSessions.Session {
+	ginCtx, _ := middleware.GinContextFromContext(ctx)
+	return ginSessions.Default(ginCtx)
 }
 
 func (ucase *authUsecase) IsLogged(ctx context.Context) bool {

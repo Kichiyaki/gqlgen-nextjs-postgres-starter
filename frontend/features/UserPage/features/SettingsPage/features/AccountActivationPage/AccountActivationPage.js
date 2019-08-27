@@ -1,7 +1,6 @@
 import React from "react";
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
-import PageLayout from "../../components/PageLayout/PageLayout";
 import withCurrentUser from "@hocs/withCurrentUser";
 import restrictionWrapper from "@hocs/restrictionWrapper";
 import { useTranslation } from "@lib/i18n/i18n";
@@ -9,6 +8,7 @@ import ActivateAccountForm from "./components/ActivateAccountForm/ActivateAccoun
 import GenerateNewActivationTokenForm from "./components/GenerateNewActivationTokenForm/GenerateNewActivationTokenForm";
 import constants from "@config/constants";
 import pageConstants from "./constants";
+import PageLayout from "../../components/PageLayout/PageLayout";
 
 const AccountActivationPage = () => {
   const { t } = useTranslation(pageConstants.NAMESPACE);
