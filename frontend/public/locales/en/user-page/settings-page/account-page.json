@@ -1,0 +1,7 @@
+{
+  "accountActivated_true": "Account activated: yes",
+  "accountActivated_false": "Account activated: no",
+  "generateNewActivationToken": "Generate new activation token.",
+  "generateNewActivationToken_success": "Check your email for further instructions.",
+  "generateNewActivationToken_error": "Cannot generate a new account activation token, please try again later."
+}

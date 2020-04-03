@@ -1,1 +1,1 @@
-export { AccountActivationPage as default } from "@features/UserPage";
+export { default } from '@features/UserPage/features/AccountActivationPage/AccountActivationPage';

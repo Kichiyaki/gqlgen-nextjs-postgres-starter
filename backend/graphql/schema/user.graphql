@@ -2,10 +2,12 @@ type User {
   id: Int!
   slug: String!
   login: String!
-  role: String!
+  displayName: String!
+  role: Int!
   email: String!
   activated: Boolean!
   createdAt: Time!
+  updatedAt: Time!
 }
 
 type UserList {
@@ -15,18 +17,28 @@ type UserList {
 
 input UserInput {
   login: String
+  displayName: String
   password: String
   email: String
-  role: String
+  role: Int
   activated: Boolean
 }
 
 input UserFilter {
-  id: String
-  login: String
-  role: String
-  email: String
-  onlyActivated: Boolean
-  sort: String
-  sortBy: String
+  id: [Int!]
+  idNeq: [Int!]
+  login: [String!]
+  loginNeq: [String!]
+  loginMatch: String
+  displayName: [String!]
+  displayNameNeq: [String!]
+  displayNameMatch: String
+  email: [String!]
+  emailNeq: [String!]
+  emailMatch: String
+  role: [Int!]
+  activated: String
+  order: [String!]
+  offset: Int
+  limit: Int
 }

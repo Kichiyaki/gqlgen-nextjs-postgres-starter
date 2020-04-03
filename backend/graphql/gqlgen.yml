@@ -4,7 +4,7 @@
 # for detailed .gqlgen.yml documentation.
 
 schema:
-  - "schema/*.graphql"
+  - 'schema/*.graphql'
 exec:
   filename: generated/generated.go
   package: generated
@@ -17,13 +17,11 @@ resolver:
   type: Resolver
 struct_tag: gqlgen
 models:
-  Pagination:
-    model: github.com/kichiyaki/graphql-starter/backend/models.Pagination
   UserList:
-    model: github.com/kichiyaki/graphql-starter/backend/models.List
+    model: backend/models.UserList
   User:
-    model: github.com/kichiyaki/graphql-starter/backend/models.User
+    model: backend/models.User
   UserInput:
-    model: github.com/kichiyaki/graphql-starter/backend/models.UserInput
+    model: backend/models.UserInput
   UserFilter:
-    model: github.com/kichiyaki/graphql-starter/backend/models.UserFilter
+    model: backend/models.UserFilter

@@ -1,37 +1,54 @@
-# GraphQL Starter - Backend
+# Backend
 
-## Example config file (cmd/serve/config.json)
+Remember to create config.json file!
 
 ```
 {
   "application": {
-    "port": 8080,
+    "name": "app name here",
+    "address": ":1234",
     "frontend": "http://localhost:3000",
-    "name": "graphql-starter"
+    "debug": false
   },
-  "database": {
-    "uri": "127.0.0.1",
-    "username": "postgres",
-    "password": "",
-    "name": "graphql-starter",
-    "port": "5432"
-  },
-  "email": {
-    "uri": "smtp.gmail.com",
-    "port": 587,
-    "username": "example@gmail.com",
-    "password": "passwordf123",
-    "address": "example@gmail.com"
+  "db": {
+    "user": "dbUser",
+    "password": "dbPassword",
+    "addr": "localhost:5432",
+    "name": "gqlgen_nextjs_starter"
   },
   "session": {
-    "name": "graphql-starter.sess",
-    "secretKey": "key",
-    "store": {
-      "address": "127.0.0.1:6379",
-      "password": "",
-      "db": 0
-    }
+    "secret": "asdd2sdsd13sd"
+  },
+  "email": {
+    "host": "emailhost",
+    "port": 587,
+    "username": "emailaccountusername",
+    "password": "emailaccountpassword",
+    "address": "its for From email header"
   }
 }
-
 ```
+
+## Getting Started
+
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
+
+### Prerequisites
+
+- Golang
+
+### Installing
+
+1. Clone this repository.
+2. Navigate to the right directory.
+3. Create config.json file (example config file is above).
+4. Type "go run main.go" in your command prompt/terminal or whatever.
+5. App should start.
+
+## Tech/framework used
+
+<b>Built with</b>
+
+- [Echo](https://echo.labstack.com/)
+- [gqlgen](https://github.com/99designs/gqlgen)
+- [go-pg](https://github.com/go-pg/pg)

@@ -1,0 +1,5 @@
+{
+  "title": "Account activation",
+  "success": "Your account has been activated.",
+  "defaultError": "Invalid token."
+}

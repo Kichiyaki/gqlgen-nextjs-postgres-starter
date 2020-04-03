@@ -1,12 +1,7 @@
 type Mutation {
   signup(user: UserInput!): User
-  login(login: String!, password: String!): User
-  logout: String
-  generateNewActivationTokenForCurrentUser: String
-  activateUserAccount(id: Int!, token: String!): User
+  signin(login: String!, password: String!): User
+  signout: String
+  generateNewActivationTokenForMe: String
   generateNewResetPasswordToken(email: String!): String
-  changePassword(currentPassword: String!, newPassword: String!): String
-
-  updateUser(id: Int!, user: UserInput!): User
-  deleteUsers(ids: [Int!]): [User!]
 }

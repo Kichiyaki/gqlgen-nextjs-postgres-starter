@@ -1,0 +1,31 @@
+{
+  "signUpForm": {
+    "title": "Sign Up Form",
+    "errors": {
+      "validation": {
+        "mustProvideLogin": "Login is required.",
+        "mustProvidePassword": "Password is required.",
+        "mustProvideEmail": "Email is required.",
+        "minimumPasswordLength": "The minimum password length is {{count}}.",
+        "maximumPasswordLength": "The maximum password length is {{count}}.",
+        "minimumLoginLength": "The minimum login length is {{count}}.",
+        "maximumLoginLength": "The maximum login length is {{count}}.",
+        "passwordMustContainAtLeastOneUppercase": "The password must contain at least one uppercase.",
+        "passwordMustContainAtLeastOneLowercase": "Password must contain at least one lowercase.",
+        "passwordMustContainAtLeastOneDigit": "The password must contain at least one digit.",
+        "passwordsAreNotTheSame": "Passwords are not the same.",
+        "invalidEmail": "Invalid email address."
+      },
+      "default": "Cannot sign up now, please try later."
+    },
+    "inputLabel": {
+      "login": "Login",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password"
+    },
+    "submitButton": "Sign Up",
+    "forgotPassword": "Forgot password?",
+    "alreadyHaveAnAccount": "Already have an account? Sign In."
+  }
+}

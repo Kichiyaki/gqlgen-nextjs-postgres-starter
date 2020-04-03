@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@common/*": ["src/common/*"],
+      "@config/*": ["src/config/*"],
+      "@contexts/*": ["src/contexts/*"],
+      "@graphql/*": ["src/graphql/*"],
+      "@features/*": ["src/features/*"],
+      "@hocs/*": ["src/hocs/*"],
+      "@hooks/*": ["src/hooks/*"],
+      "@libs/*": ["src/libs/*"],
+      "@services/*": ["src/services/*"],
+      "@locales/*": ["public/locales/*"],
+      "@utils/*": ["src/utils/*"]
+    }
+  },
+  "exclude": [".next", "node_modules"],
+  "typeAcquisition": {
+    "include": ["jest"]
+  }
+}

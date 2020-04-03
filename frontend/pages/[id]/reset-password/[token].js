@@ -1,1 +1,1 @@
-export { ResetPasswordPage as default } from "@features/UserPage";
+export { default } from '@features/UserPage/features/ResetPasswordPage/ResetPasswordPage';

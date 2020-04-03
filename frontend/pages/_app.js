@@ -1,15 +1,24 @@
-import "react-toastify/dist/ReactToastify.min.css";
-import React from "react";
-import App, { Container } from "next/app";
-import { ApolloProvider } from "react-apollo";
-import { ToastContainer } from "react-toastify";
-import withApollo from "../hocs/withApollo";
-import { appWithTranslation } from "../lib/i18n/i18n";
+import React from 'react';
+import App from 'next/app';
+import { ApolloProvider } from '@apollo/react-hooks';
+import { createMuiTheme, responsiveFontSizes } from '@material-ui/core/styles';
+import withApollo from '@libs/withApollo';
+import { appWithTranslation } from '@libs/i18n';
+import { ME } from '@graphql/queries/auth.queries';
+import { ThemeProvider } from '@material-ui/styles';
+
+const theme = responsiveFontSizes(
+  createMuiTheme({
+    palette: {
+      type: 'dark'
+    }
+  })
+);
 
 class MyApp extends App {
   static async getInitialProps({ Component, ctx }) {
+    await ctx.apolloClient.query({ query: ME });
     let pageProps = {};
-
     if (Component.getInitialProps) {
       pageProps = await Component.getInitialProps(ctx);
     }
@@ -18,7 +27,7 @@ class MyApp extends App {
   }
 
   componentDidMount() {
-    const jssStyles = document.querySelector("#jss-server-side");
+    const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
       jssStyles.parentNode.removeChild(jssStyles);
     }
@@ -27,12 +36,11 @@ class MyApp extends App {
   render() {
     const { Component, pageProps, apollo } = this.props;
     return (
-      <Container>
-        <ApolloProvider client={apollo}>
+      <ApolloProvider client={apollo}>
+        <ThemeProvider theme={theme}>
           <Component {...pageProps} />
-        </ApolloProvider>
-        <ToastContainer />
-      </Container>
+        </ThemeProvider>
+      </ApolloProvider>
     );
   }
 }

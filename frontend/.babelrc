@@ -4,20 +4,53 @@
     [
       "module-resolver",
       {
-        "@": ["."],
+        "@": ["./src"],
         "alias": {
-          "@common": "./common",
-          "@config": "./config",
-          "@contexts": "./contexts",
-          "@features": "./features",
-          "@graphql": "./graphql",
-          "@hocs": "./hocs",
-          "@hooks": "./hooks",
-          "@lib": "./lib",
-          "@i18n": "./i18n",
-          "@services": "./services",
-          "@static": "./static",
-          "@utils": "./utils"
+          "@common": "./src/common",
+          "@config": "./src/config",
+          "@contexts": "./src/contexts",
+          "@graphql": "./src/graphql",
+          "@features": "./src/features",
+          "@hocs": "./src/hocs",
+          "@hooks": "./src/hooks",
+          "@libs": "./src/libs",
+          "@services": "./src/services",
+          "@utils": "./src/utils"
+        }
+      }
+    ],
+    [
+      "babel-plugin-transform-imports",
+      {
+        "@material-ui/core": {
+          // Use "transform: '@material-ui/core/${member}'," if your bundler does not support ES modules
+          "transform": "@material-ui/core/${member}",
+          "preventFullImport": true
+        },
+        "@material-ui/lab": {
+          // Use "transform: '@material-ui/lab/${member}'," if your bundler does not support ES modules
+          "transform": "@material-ui/lab/${member}",
+          "preventFullImport": true
+        },
+        "@material-ui/icons": {
+          // Use "transform: '@material-ui/icons/${member}'," if your bundler does not support ES modules
+          "transform": "@material-ui/icons/${member}",
+          "preventFullImport": true
+        },
+        "lodash": {
+          // Use "transform: 'lodash/${member}'," if your bundler does not support ES modules
+          "transform": "lodash/${member}",
+          "preventFullImport": true
+        },
+        "date-fns": {
+          // Use "transform: 'date-fns/${member}'," if your bundler does not support ES modules
+          "transform": "date-fns/${member}",
+          "preventFullImport": true
+        },
+        "validator": {
+          // Use "transform: 'validator/${member}'," if your bundler does not support ES modules
+          "transform": "validator/lib/${member}",
+          "preventFullImport": true
         }
       }
     ]

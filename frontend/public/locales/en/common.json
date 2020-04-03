@@ -1,0 +1,27 @@
+{
+  "navbar": {
+    "link": {
+      "mainPage": "Main Page",
+      "signin": "Sign In",
+      "signup": "Sign Up",
+      "settings": "Settings"
+    },
+    "signout": "Sign Out"
+  },
+  "resetPasswordDialog": {
+    "title": "Reset your password",
+    "submitButton": "Reset password",
+    "cancelButton": "Cancel",
+    "errors": {
+      "validation": {
+        "invalidEmail": "Invalid email address.",
+        "mustProvideEmail": "Email is required."
+      },
+      "default": "Cannot generate a new reset password token, please try again later."
+    },
+    "inputLabel": {
+      "email": "Email address"
+    },
+    "success": "Check your email for further instructions."
+  }
+}
