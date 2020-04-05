@@ -55,7 +55,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ## Tests
 
-**Remember** to run postgresql locally with default credentials or to set this ENV variables:
+Remember to run PostgreSQL locally with default credentials or to set these env variables:
 
 1. POSTGRE_USER
 2. POSTGRE_PASSWORD
