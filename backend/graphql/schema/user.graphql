@@ -38,6 +38,12 @@ input UserFilter {
   emailMatch: String
   role: [Int!]
   activated: String
+  createdAt: Time
+  createdAtGt: Time
+  createdAtLt: Time
+  updatedAt: Time
+  updatedAtGt: Time
+  updatedAtLt: Time
   order: [String!]
   offset: Int
   limit: Int

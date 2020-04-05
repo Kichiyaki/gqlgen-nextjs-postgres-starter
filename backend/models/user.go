@@ -109,26 +109,26 @@ func (input UserInput) ToUser() User {
 type UserFilter struct {
 	tableName struct{} `urlstruct:"u"`
 
-	ID               []int
-	IdNEQ            []int ``
-	Login            []string
-	LoginNEQ         []string
-	LoginMATCH       string
-	DisplayName      []string
-	DisplayNameNEQ   []string
-	DisplayNameMATCH string
-	Email            []string
-	EmailNEQ         []string
-	EmailMATCH       string
-	Role             []int
-	Activated        string `urlstruct:",nowhere"`
-	CreatedAt        time.Time
-	CreatedAtGT      time.Time
-	CreatedAtLT      time.Time
-	UpdatedAt        time.Time
-	UpdatedAtGT      time.Time
-	UpdatedAtLT      time.Time
-	Offset           int
-	Limit            int
-	Order            []string
+	ID               []int     `gqlgen:"id"`
+	IdNEQ            []int     `gqlgen:"idNeq"`
+	Login            []string  `gqlgen:"login"`
+	LoginNEQ         []string  `gqlgen:"loginNeq"`
+	LoginMATCH       string    `gqlgen:"loginMatch"`
+	DisplayName      []string  `gqlgen:"displayName"`
+	DisplayNameNEQ   []string  `gqlgen:"displayNameNeq"`
+	DisplayNameMATCH string    `gqlgen:"displayNameMatch"`
+	Email            []string  `gqlgen:"email"`
+	EmailNEQ         []string  `gqlgen:"emailNeq"`
+	EmailMATCH       string    `gqlgen:"emailMatch"`
+	Role             []int     `gqlgen:"role"`
+	Activated        string    `urlstruct:",nowhere" gqlgen:"activated"`
+	CreatedAt        time.Time `gqlgen:"createdAt"`
+	CreatedAtGT      time.Time `gqlgen:"createdAtGt"`
+	CreatedAtLT      time.Time `gqlgen:"createdAtLt"`
+	UpdatedAt        time.Time `gqlgen:"updatedAt"`
+	UpdatedAtGT      time.Time `gqlgen:"updatedAtGt"`
+	UpdatedAtLT      time.Time `gqlgen:"updatedAtLt"`
+	Offset           int       `urlstruct:",nowhere"`
+	Limit            int       `urlstruct:",nowhere"`
+	Order            []string  `urlstruct:",nowhere"`
 }

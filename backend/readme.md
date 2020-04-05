@@ -52,3 +52,12 @@ These instructions will get you a copy of the project up and running on your loc
 - [Echo](https://echo.labstack.com/)
 - [gqlgen](https://github.com/99designs/gqlgen)
 - [go-pg](https://github.com/go-pg/pg)
+
+## Tests
+
+**Remember** to run postgresql locally with default credentials or to set this ENV variables:
+
+1. POSTGRE_USER
+2. POSTGRE_PASSWORD
+3. POSTGRE_TEST_DATABASE
+4. POSTGRE_ADDR

@@ -381,6 +381,12 @@ input UserFilter {
   emailMatch: String
   role: [Int!]
   activated: String
+  createdAt: Time
+  createdAtGt: Time
+  createdAtLt: Time
+  updatedAt: Time
+  updatedAtGt: Time
+  updatedAtLt: Time
   order: [String!]
   offset: Int
   limit: Int
@@ -2399,6 +2405,42 @@ func (ec *executionContext) unmarshalInputUserFilter(ctx context.Context, obj in
 			if err != nil {
 				return it, err
 			}
+		case "createdAt":
+			var err error
+			it.CreatedAt, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtGt":
+			var err error
+			it.CreatedAtGT, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "createdAtLt":
+			var err error
+			it.CreatedAtLT, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAt":
+			var err error
+			it.UpdatedAt, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtGt":
+			var err error
+			it.UpdatedAtGT, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "updatedAtLt":
+			var err error
+			it.UpdatedAtLT, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "order":
 			var err error
 			it.Order, err = ec.unmarshalOString2ᚕstringᚄ(ctx, v)
@@ -3335,6 +3377,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	return graphql.UnmarshalTime(v)
+}
+
+func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	return graphql.MarshalTime(v)
 }
 
 func (ec *executionContext) marshalOUser2backendᚋmodelsᚐUser(ctx context.Context, sel ast.SelectionSet, v models.User) graphql.Marshaler {

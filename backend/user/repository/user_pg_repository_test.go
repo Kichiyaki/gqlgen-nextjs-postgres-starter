@@ -44,9 +44,9 @@ func TestPgRepository(t *testing.T) {
 				url.Values{
 					"login__neq": {seedUsers[0].Login},
 					"email__neq": {seedUsers[1].Email},
+					"order":      {"id DESC"},
 				},
 				f)
-			f.Sort = "id:desc"
 			require.Equal(t, nil, err)
 			data, err := repo.Fetch(context.Background(), f)
 			require.Equal(t, nil, err)

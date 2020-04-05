@@ -24,7 +24,7 @@ func ConnectToPostgreTestDB(logger bool) *pg.DB {
 		User:     os.Getenv("POSTGRE_USER"),
 		Password: os.Getenv("POSTGRE_PASSWORD"),
 		Database: os.Getenv("POSTGRE_TEST_DATABASE"),
-		Addr:     os.Getenv("POSTGRE_URI"),
+		Addr:     os.Getenv("POSTGRE_ADDR"),
 	})
 	if logger {
 		db.AddQueryHook(dbLogger{})
