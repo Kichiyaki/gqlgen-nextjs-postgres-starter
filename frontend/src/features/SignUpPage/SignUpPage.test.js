@@ -9,7 +9,7 @@ import SignUpPage from './SignUpPage';
 const t1 = i18n.getFixedT(null, SIGN_UP_PAGE);
 const t2 = i18n.getFixedT(null, SIGN_IN_PAGE);
 
-const renderPage = pathname => {
+const renderPage = (pathname) => {
   return render(
     <TestLayout client={createApolloClient()}>
       <SignUpPage pathname={pathname} />
@@ -32,7 +32,6 @@ describe('features > SignUpPage', () => {
     expect(
       queryByText(t1('signUpForm.alreadyHaveAnAccount'))
     ).toBeInTheDocument();
-    expect(queryByText(t1('signUpForm.forgotPassword'))).toBeInTheDocument();
     expect(queryByText(t1('signUpForm.submitButton'))).toBeInTheDocument();
     expect(asFragment()).toMatchSnapshot();
   });

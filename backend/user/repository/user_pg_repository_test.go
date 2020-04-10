@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"fmt"
 	"net/url"
 	"strings"
 	"testing"
@@ -50,7 +49,6 @@ func TestPgRepository(t *testing.T) {
 			require.Equal(t, nil, err)
 			data, err := repo.Fetch(context.Background(), f)
 			require.Equal(t, nil, err)
-			fmt.Println(len(seedUsers))
 			require.Equal(t, len(seedUsers)-2, data.Total)
 			users := data.Items
 			maxID := 0

@@ -9,7 +9,7 @@ import {
   MAXIMUM_LOGIN_LENGTH,
   MAXIMUM_PASSWORD_LENGTH,
   MINIMUM_LOGIN_LENGTH,
-  MINIMUM_PASSWORD_LENGTH
+  MINIMUM_PASSWORD_LENGTH,
 } from '@config/sign-up-policy';
 import { INPUT_IDS, SIGN_UP_MUTATION, PROPS_TO_SEND } from './constants';
 import SignUpForm from './SignUpForm';
@@ -19,7 +19,7 @@ const user = {
   login: 'Logineszkowys',
   password: '123sssDD22sd',
   confirmPassword: '123sssDD22sd',
-  email: 'email@email.com'
+  email: 'email@email.com',
 };
 const t = i18n.getFixedT(null, SIGN_UP_PAGE);
 
@@ -40,7 +40,7 @@ const renderCmp = (mocks = []) => {
         />
       </TestLayout>
     ),
-    client
+    client,
   };
 };
 
@@ -48,7 +48,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
   test('login, email and password are required', async () => {
     const { getAllByDisplayValue, queryAllByText, queryByText } = renderCmp();
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       fireEvent.change(el, { target: { value: '' } });
       fireEvent.blur(el);
     });
@@ -57,8 +57,8 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       [
         t('signUpForm.errors.validation.mustProvideLogin'),
         t('signUpForm.errors.validation.mustProvideEmail'),
-        [t('signUpForm.errors.validation.mustProvidePassword'), 2]
-      ].forEach(test => {
+        [t('signUpForm.errors.validation.mustProvidePassword'), 2],
+      ].forEach((test) => {
         if (Array.isArray(test)) {
           expect(queryAllByText(test[0])).toHaveLength(test[1]);
         } else {
@@ -72,11 +72,11 @@ describe('features > SignUpPage > components > SignUpForm', () => {
     const {
       getAllByDisplayValue,
       getByDisplayValue,
-      queryByText
+      queryByText,
     } = renderCmp();
     let value = 'a';
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.LOGIN) {
         fireEvent.change(el, { target: { value } });
         fireEvent.blur(el);
@@ -87,7 +87,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       expect(
         queryByText(
           t('signUpForm.errors.validation.minimumLoginLength', {
-            count: MINIMUM_LOGIN_LENGTH
+            count: MINIMUM_LOGIN_LENGTH,
           })
         )
       ).toBeInTheDocument()
@@ -100,8 +100,8 @@ describe('features > SignUpPage > components > SignUpForm', () => {
 
     fireEvent.change(el, {
       target: {
-        value
-      }
+        value,
+      },
     });
     fireEvent.blur(el);
 
@@ -109,7 +109,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       expect(
         queryByText(
           t('signUpForm.errors.validation.maximumLoginLength', {
-            count: MAXIMUM_LOGIN_LENGTH
+            count: MAXIMUM_LOGIN_LENGTH,
           })
         )
       ).toBeInTheDocument()
@@ -120,11 +120,11 @@ describe('features > SignUpPage > components > SignUpForm', () => {
     const {
       getAllByDisplayValue,
       queryByText,
-      getByDisplayValue
+      getByDisplayValue,
     } = renderCmp();
     let value = 'asasd';
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.PASSWORD) {
         fireEvent.change(el, { target: { value } });
         fireEvent.blur(el);
@@ -135,7 +135,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       expect(
         queryByText(
           t('signUpForm.errors.validation.minimumPasswordLength', {
-            count: MINIMUM_PASSWORD_LENGTH
+            count: MINIMUM_PASSWORD_LENGTH,
           })
         )
       ).toBeInTheDocument()
@@ -148,8 +148,8 @@ describe('features > SignUpPage > components > SignUpForm', () => {
 
     fireEvent.change(el, {
       target: {
-        value
-      }
+        value,
+      },
     });
     fireEvent.blur(el);
 
@@ -157,7 +157,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       expect(
         queryByText(
           t('signUpForm.errors.validation.maximumPasswordLength', {
-            count: MAXIMUM_PASSWORD_LENGTH
+            count: MAXIMUM_PASSWORD_LENGTH,
           })
         )
       ).toBeInTheDocument()
@@ -167,7 +167,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
   test('password must contain at least 1 lowercase', async () => {
     const { getAllByDisplayValue, queryByText } = renderCmp();
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.PASSWORD) {
         fireEvent.change(el, { target: { value: 'ASDASDAASDASDASDA' } });
         fireEvent.blur(el);
@@ -188,7 +188,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
   test('password must contain at least 1 uppercase', async () => {
     const { getAllByDisplayValue, queryByText } = renderCmp();
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.PASSWORD) {
         fireEvent.change(el, { target: { value: 'asdasdasdasdaadsa' } });
         fireEvent.blur(el);
@@ -209,7 +209,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
   test('password must contain at least 1 digit', async () => {
     const { getAllByDisplayValue, queryByText } = renderCmp();
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.PASSWORD) {
         fireEvent.change(el, { target: { value: 'asdasdasdasASDdaadsa' } });
         fireEvent.blur(el);
@@ -228,7 +228,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
   test('passwords must be the same', async () => {
     const { getAllByDisplayValue, queryByText } = renderCmp();
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.PASSWORD) {
         fireEvent.change(el, { target: { value: 'asdasdasdasASDdaadsa' } });
         fireEvent.blur(el);
@@ -250,7 +250,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
     const { getAllByDisplayValue, queryByText, queryAllByText } = renderCmp();
     const email = 'asdfffsasd';
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       if (el.id === INPUT_IDS.EMAIL) {
         fireEvent.change(el, { target: { value: email } });
         fireEvent.blur(el);
@@ -258,7 +258,7 @@ describe('features > SignUpPage > components > SignUpForm', () => {
     });
 
     await waitFor(() => {
-      [t('signUpForm.errors.validation.invalidEmail')].forEach(text => {
+      [t('signUpForm.errors.validation.invalidEmail')].forEach((text) => {
         expect(queryByText(text)).toBeInTheDocument();
       });
     });
@@ -269,37 +269,37 @@ describe('features > SignUpPage > components > SignUpForm', () => {
       {
         request: {
           query: SIGN_UP_MUTATION,
-          variables: pick(user, PROPS_TO_SEND)
+          variables: pick(user, PROPS_TO_SEND),
         },
         result: {
           data: {
             signup: {
-              id: 1
-            }
-          }
-        }
+              id: 1,
+            },
+          },
+        },
       },
       {
         request: {
-          query: ME
+          query: ME,
         },
         result: {
           data: {
             me: {
-              id: 1
-            }
-          }
-        }
-      }
+              id: 1,
+            },
+          },
+        },
+      },
     ];
 
     const { getAllByDisplayValue, queryByText, getByDisplayValue } = renderCmp(
       mocks
     );
 
-    getAllByDisplayValue('').forEach(el => {
+    getAllByDisplayValue('').forEach((el) => {
       fireEvent.change(el, {
-        target: { value: user[el.id] }
+        target: { value: user[el.id] },
       });
       fireEvent.blur(el);
     });
@@ -312,14 +312,6 @@ describe('features > SignUpPage > components > SignUpForm', () => {
     await waitFor(() => {
       expect(setMessage).not.toHaveBeenCalled();
       expect(setSeverity).not.toHaveBeenCalled();
-    });
-  });
-
-  test('should correctly call showDialog', async () => {
-    const { getByText } = renderCmp();
-    fireEvent.click(getByText(t('signUpForm.forgotPassword')));
-    await waitFor(() => {
-      expect(showDialog).toHaveBeenCalledTimes(1);
     });
   });
 });
