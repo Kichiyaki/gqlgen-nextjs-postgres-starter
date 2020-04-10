@@ -1,6 +1,7 @@
 {
   "global.internalServerError": "Internal server error.",
   "global.unauthorizedError": "Unauthorized.",
+  "global.tokenExpiredError": "Token expired",
 
   "auth.mustBeLoggedInError": "You must be logged in to finish this request.",
   "auth.mustBeLoggedOutError": "You must be logged out to finish this request.",

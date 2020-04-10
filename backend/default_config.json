@@ -3,8 +3,9 @@
     "name": "gqlgen-nextjs-postgres-starter",
     "address": ":1234",
     "frontend": "http://localhost:3000",
-    "debug": true,
-    "intervalBetweenTokensGeneration": 5
+    "debug": false,
+    "intervalBetweenTokensGeneration": 5,
+    "resetPasswordTokenExpiresIn": 5
   },
   "db": {
     "user": "postgres",

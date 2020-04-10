@@ -13,20 +13,17 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField
+  TextField,
 } from '@material-ui/core';
 
 const ResetPasswordDialog = ({ open, onClose, setMessage, setSeverity }) => {
   const [email, setEmail] = useState('');
   const { t } = useTranslation(COMMON);
   const [generateNewResetPasswordTokenMutation, { loading }] = useMutation(
-    GENERATE_NEW_RESET_PASSWORD_TOKEN_MUTATION,
-    {
-      ignoreResults: true
-    }
+    GENERATE_NEW_RESET_PASSWORD_TOKEN_MUTATION
   );
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setEmail(e.target.value);
   };
 
@@ -70,6 +67,7 @@ const ResetPasswordDialog = ({ open, onClose, setMessage, setSeverity }) => {
           value={email}
           onChange={handleChange}
           required
+          autoComplete="email"
         />
       </DialogContent>
       <DialogActions>
@@ -88,7 +86,7 @@ ResetPasswordDialog.propTypes = {
   open: bool.isRequired,
   onClose: func.isRequired,
   setMessage: func.isRequired,
-  setSeverity: func.isRequired
+  setSeverity: func.isRequired,
 };
 
 export default ResetPasswordDialog;

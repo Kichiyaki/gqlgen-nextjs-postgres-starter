@@ -20,6 +20,7 @@ type Config struct {
 	UserRepo                        user.Repository
 	PasswordGenerator               password.PasswordGenerator
 	IntervalBetweenTokensGeneration int
+	ResetPasswordTokenExpiresIn     int
 }
 
 type usecase struct {
@@ -27,6 +28,7 @@ type usecase struct {
 	generator                       password.PasswordGenerator
 	logrus                          *logrus.Entry
 	intervalBetweenTokensGeneration int
+	resetPasswordTokenExpiresIn     int
 }
 
 func NewAuthUsecase(cfg Config) auth.Usecase {
@@ -38,6 +40,7 @@ func NewAuthUsecase(cfg Config) auth.Usecase {
 		cfg.PasswordGenerator,
 		logrus.WithField("package", "auth/usecase"),
 		cfg.IntervalBetweenTokensGeneration,
+		cfg.ResetPasswordTokenExpiresIn,
 	}
 }
 
@@ -77,7 +80,7 @@ func (ucase *usecase) GenerateNewActivationToken(ctx context.Context, id int) (*
 	} else if u.Activated {
 		entry.Debug("GenerateNewActivationToken - The account is activated.")
 		return nil, _errors.Wrap(_errors.ErrAccountIsActivated)
-	} else if !isProperInterval(now, u.ActivationTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
+	} else if isProperInterval(now, u.ActivationTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
 		entry.Debug("GenerateNewActivationToken - Token has been generated recently.")
 		return nil, _errors.Wrap(_errors.ErrActivationTokenHasBeenGeneratedRecently)
 	}
@@ -114,7 +117,7 @@ func (ucase *usecase) GenerateNewResetPasswordToken(ctx context.Context, email s
 	u, err := ucase.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, err
-	} else if !isProperInterval(now, u.ResetPasswordTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
+	} else if isProperInterval(now, u.ResetPasswordTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
 		entry.Debug("GenerateNewResetPasswordToken - Token has been generated recently.")
 		return nil, _errors.Wrap(_errors.ErrResetPasswordTokenHasBeenGeneratedRecently)
 	}
@@ -134,6 +137,10 @@ func (ucase *usecase) ResetPassword(ctx context.Context, id int, token string) (
 		return nil, "", err
 	}
 	if u.ResetPasswordToken == token {
+		if !isProperInterval(time.Now(), u.ResetPasswordTokenGeneratedAt, ucase.resetPasswordTokenExpiresIn) {
+			entry.Debug("ResetPassword - Reset password token expired.")
+			return nil, "", _errors.Wrap(_errors.ErrTokenExpired)
+		}
 		pswd := ucase.generator.MustGenerate(16, 4, 4, false, false)
 		u.Password = pswd
 		u.ResetPasswordToken = uuid.New().String()
@@ -148,10 +155,9 @@ func (ucase *usecase) ResetPassword(ctx context.Context, id int, token string) (
 
 func isProperInterval(a, b time.Time, interval int) bool {
 	year, month, day, hour, min, _ := utils.DateDifference(a, b)
-	logrus.Debug("isProperInterval", year, month, day, hour, min, interval)
-	return year != 0 ||
-		month != 0 ||
-		day != 0 ||
-		hour != 0 ||
-		min >= interval
+	return year == 0 &&
+		month == 0 &&
+		day == 0 &&
+		hour == 0 &&
+		min < interval
 }

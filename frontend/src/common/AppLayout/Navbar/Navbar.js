@@ -11,7 +11,7 @@ import {
   MAIN_PAGE,
   SIGN_IN_PAGE,
   SIGN_UP_PAGE,
-  USER_PAGE
+  USER_PAGE,
 } from '@config/routes';
 
 import { makeStyles } from '@material-ui/core/styles';
@@ -24,49 +24,49 @@ import {
   Menu,
   Hidden,
   Button,
-  MenuItem
+  MenuItem,
 } from '@material-ui/core';
 import { Menu as MenuIcon } from '@material-ui/icons';
 import Link from '@common/Link/Link';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles((theme) => ({
   titleWrapper: {
     flexGrow: 1,
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   whiteBgOnHover: {
     '&:hover': {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)'
-    }
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
   },
-  navbar: props => {
+  navbar: (props) => {
     const defaults = {
       '&  a': {
         borderRadius: '4px',
         transition: 'all .2s',
         cursor: 'pointer',
-        padding: theme.spacing(0.75, 1)
-      }
+        padding: theme.spacing(0.75, 1),
+      },
     };
     return props.transparent
       ? {
           ...defaults,
           backgroundColor: 'transparent !important',
-          boxShadow: 'none'
+          boxShadow: 'none',
         }
       : defaults;
   },
   title: {
-    marginRight: theme.spacing(4)
-  }
+    marginRight: theme.spacing(4),
+  },
 }));
 
 const navLinks = [
   {
     name: 'navbar.link.mainPage',
-    href: MAIN_PAGE
-  }
+    href: MAIN_PAGE,
+  },
 ];
 
 export default function Navbar({ transparent, position }) {
@@ -75,14 +75,13 @@ export default function Navbar({ transparent, position }) {
   const { data } = useQuery(ME, { fetchPolicy: 'cache-only' });
   const [anchorEl, setAnchorEl] = useState(null);
   const [signOut, { loading }] = useMutation(SIGN_OUT_MUTATION, {
-    ignoreResults: true,
     awaitRefetchQueries: true,
-    refetchQueries: [{ query: ME }]
+    refetchQueries: [{ query: ME }],
   });
   const open = Boolean(anchorEl);
   const logged = data && data.me;
 
-  const handleMenu = event => {
+  const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -101,7 +100,7 @@ export default function Navbar({ transparent, position }) {
               {NAME}
             </Typography>
             <Hidden smDown>
-              {navLinks.map(l => (
+              {navLinks.map((l) => (
                 <Link
                   key={l.name}
                   href={l.href}
@@ -164,18 +163,18 @@ export default function Navbar({ transparent, position }) {
                 anchorEl={anchorEl}
                 anchorOrigin={{
                   vertical: 'top',
-                  horizontal: 'right'
+                  horizontal: 'right',
                 }}
                 keepMounted
                 transformOrigin={{
                   vertical: 'top',
-                  horizontal: 'right'
+                  horizontal: 'right',
                 }}
                 open={open}
                 onClose={handleClose}
                 disableScrollLock
               >
-                {navLinks.map(l => (
+                {navLinks.map((l) => (
                   <MenuItem key={l.name}>
                     <Link href={l.href} color="inherit" underline="none">
                       {t(l.name)}
@@ -223,11 +222,11 @@ export default function Navbar({ transparent, position }) {
 
 Navbar.defaultProps = {
   transparent: false,
-  position: 'static'
+  position: 'static',
 };
 
 Navbar.propTypes = {
   position: oneOf(['relative', 'static', 'fixed', 'sticky', 'absolute'])
     .isRequired,
-  transparent: bool.isRequired
+  transparent: bool.isRequired,
 };

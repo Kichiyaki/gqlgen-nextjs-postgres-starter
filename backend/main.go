@@ -96,6 +96,7 @@ func main() {
 	authUcase := _authUsecase.NewAuthUsecase(_authUsecase.Config{
 		UserRepo:                        userRepo,
 		IntervalBetweenTokensGeneration: viper.GetInt("application.intervalBetweenTokensGeneration"),
+		ResetPasswordTokenExpiresIn:     viper.GetInt("application.resetPasswordTokenExpiresIn"),
 	})
 
 	e := echo.New()

@@ -8,6 +8,8 @@ Remember to create config.json file!
     "name": "app name here",
     "address": ":1234",
     "frontend": "http://localhost:3000",
+    "intervalBetweenTokensGeneration": 5,
+    "resetPasswordTokenExpiresIn": 5,
     "debug": false
   },
   "db": {
