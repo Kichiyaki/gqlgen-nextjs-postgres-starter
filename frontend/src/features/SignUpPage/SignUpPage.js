@@ -23,7 +23,7 @@ function SignUpPage({ pathname }) {
         {routes.SIGN_IN_PAGE === pathname ? (
           <SignInForm {...snackbarBag} showDialog={showDialog} />
         ) : (
-          <SignUpForm {...snackbarBag} showDialog={showDialog} />
+          <SignUpForm {...snackbarBag} />
         )}
       </Container>
       {isOpen && (
@@ -43,7 +43,7 @@ function SignUpPage({ pathname }) {
 SignUpPage.getInitialProps = ({ pathname }) => {
   const props = {
     namespacesRequired: [COMMON],
-    pathname
+    pathname,
   };
   if (pathname === routes.SIGN_IN_PAGE) {
     props.namespacesRequired.push(SIGN_IN_PAGE);

@@ -17,18 +17,20 @@ const (
 type User struct {
 	tableName struct{} `pg:"alias:u"`
 
-	ID                 int       `json:"id" pg:",pk"`
-	Slug               string    `json:"slug" pg:",unique,use_zero"`
-	Login              string    `json:"login" pg:",unique,use_zero"`
-	Password           string    `json:"-" gqlgen:"-"`
-	DisplayName        string    `json:"displayName" pg:",use_zero"`
-	Email              string    `json:"email" pg:",unique"`
-	CreatedAt          time.Time `json:"createdAt" pg:"default:now()"`
-	UpdatedAt          time.Time `json:"updatedAt" pg:"default:now()"`
-	Role               int       `json:"role"`
-	Activated          bool      `json:"activated" pg:"default:false,use_zero"`
-	ActivationToken    string    `json:"-" gqlgen:"-"`
-	ResetPasswordToken string    `json:"-" gqlgen:"-"`
+	ID                            int       `json:"id" pg:",pk"`
+	Slug                          string    `json:"slug" pg:",unique,use_zero"`
+	Login                         string    `json:"login" pg:",unique,use_zero"`
+	Password                      string    `json:"-" gqlgen:"-"`
+	DisplayName                   string    `json:"displayName" pg:",use_zero"`
+	Email                         string    `json:"email" pg:",unique"`
+	CreatedAt                     time.Time `json:"createdAt" pg:"default:now()"`
+	UpdatedAt                     time.Time `json:"updatedAt" pg:"default:now()"`
+	Role                          int       `json:"role"`
+	Activated                     bool      `json:"activated" pg:"default:false,use_zero"`
+	ActivationToken               string    `json:"-" gqlgen:"-"`
+	ActivationTokenGeneratedAt    time.Time `json:"-" gqlgen:"-" pg:"default:now()"`
+	ResetPasswordToken            string    `json:"-" gqlgen:"-"`
+	ResetPasswordTokenGeneratedAt time.Time `json:"-" gqlgen:"-" pg:"default:now()"`
 }
 
 func (u *User) CompareHashAndPassword(password string) error {

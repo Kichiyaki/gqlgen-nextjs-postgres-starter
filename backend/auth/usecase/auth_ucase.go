@@ -6,7 +6,9 @@ import (
 	"backend/models"
 	"backend/user"
 	"backend/user/validation"
+	"backend/utils"
 	"context"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -15,14 +17,16 @@ import (
 )
 
 type Config struct {
-	UserRepo          user.Repository
-	PasswordGenerator password.PasswordGenerator
+	UserRepo                        user.Repository
+	PasswordGenerator               password.PasswordGenerator
+	IntervalBetweenTokensGeneration int
 }
 
 type usecase struct {
-	userRepo  user.Repository
-	generator password.PasswordGenerator
-	logrus    *logrus.Entry
+	userRepo                        user.Repository
+	generator                       password.PasswordGenerator
+	logrus                          *logrus.Entry
+	intervalBetweenTokensGeneration int
 }
 
 func NewAuthUsecase(cfg Config) auth.Usecase {
@@ -33,13 +37,14 @@ func NewAuthUsecase(cfg Config) auth.Usecase {
 		cfg.UserRepo,
 		cfg.PasswordGenerator,
 		logrus.WithField("package", "auth/usecase"),
+		cfg.IntervalBetweenTokensGeneration,
 	}
 }
 
 func (ucase *usecase) Signup(ctx context.Context, input models.UserInput) (*models.User, error) {
 	u := input.ToUser()
-	log := ucase.logrus.WithField("user", u)
-	log.Debug("Signup")
+	entry := ucase.logrus.WithField("user", u)
+	entry.Debug("Signup")
 	u.Role = models.UserDefaultRole
 	u.Activated = false
 	u.ActivationToken = uuid.New().String()
@@ -48,7 +53,7 @@ func (ucase *usecase) Signup(ctx context.Context, input models.UserInput) (*mode
 	}
 	cfg := validation.NewConfig()
 	if err := cfg.Validate(u); err != nil {
-		log.Debugf("Cannot create user: %s", err.Error())
+		entry.Debugf("Signup - Cannot create user: %s", err.Error())
 		return nil, err
 	}
 	if err := ucase.userRepo.Store(ctx, &u); err != nil {
@@ -63,26 +68,32 @@ func (ucase *usecase) Signin(ctx context.Context, login, password string) (*mode
 }
 
 func (ucase *usecase) GenerateNewActivationToken(ctx context.Context, id int) (*models.User, error) {
-	ucase.logrus.WithField("id", id).Debug("GenerateNewActivationToken")
+	now := time.Now()
+	entry := ucase.logrus.WithField("id", id)
+	entry.Debug("GenerateNewActivationToken")
 	u, err := ucase.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	} else if u.Activated {
-		ucase.logrus.WithField("id", id).Debug("The account is activated.")
-		return nil, _errors.Wrap(_errors.ErrUnauthorized)
+		entry.Debug("GenerateNewActivationToken - The account is activated.")
+		return nil, _errors.Wrap(_errors.ErrAccountIsActivated)
+	} else if !isProperInterval(now, u.ActivationTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
+		entry.Debug("GenerateNewActivationToken - Token has been generated recently.")
+		return nil, _errors.Wrap(_errors.ErrActivationTokenHasBeenGeneratedRecently)
 	}
 	u.ActivationToken = uuid.New().String()
+	u.ActivationTokenGeneratedAt = now
 	return u, ucase.userRepo.Update(ctx, u)
 }
 
 func (ucase *usecase) Activate(ctx context.Context, id int, token string) (*models.User, error) {
-	log := ucase.logrus.WithField("id", id).WithField("token", token)
-	log.Debug("Activate")
+	entry := ucase.logrus.WithField("id", id).WithField("token", token)
+	entry.Debug("Activate")
 	u, err := ucase.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	} else if u.Activated {
-		log.Debug("The account is activated.")
+		entry.Debug("The account is activated.")
 		return nil, _errors.Wrap(_errors.ErrUnauthorized)
 	}
 	if u.ActivationToken == token {
@@ -92,17 +103,23 @@ func (ucase *usecase) Activate(ctx context.Context, id int, token string) (*mode
 		}
 		return u, nil
 	}
-	log.Debug("Wrong activation token.")
+	entry.Debug("Activate - Wrong activation token.")
 	return nil, _errors.Wrap(_errors.ErrWrongActivationToken)
 }
 
 func (ucase *usecase) GenerateNewResetPasswordToken(ctx context.Context, email string) (*models.User, error) {
-	ucase.logrus.WithField("email", email).Debug("GenerateNewResetPasswordToken")
+	now := time.Now()
+	entry := ucase.logrus.WithField("email", email)
+	entry.Debug("GenerateNewResetPasswordToken")
 	u, err := ucase.userRepo.GetByEmail(ctx, email)
 	if err != nil {
 		return nil, err
+	} else if !isProperInterval(now, u.ResetPasswordTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
+		entry.Debug("GenerateNewResetPasswordToken - Token has been generated recently.")
+		return nil, _errors.Wrap(_errors.ErrResetPasswordTokenHasBeenGeneratedRecently)
 	}
 	u.ResetPasswordToken = uuid.New().String()
+	u.ResetPasswordTokenGeneratedAt = time.Now()
 	if err := ucase.userRepo.Update(ctx, u); err != nil {
 		return nil, err
 	}
@@ -110,8 +127,8 @@ func (ucase *usecase) GenerateNewResetPasswordToken(ctx context.Context, email s
 }
 
 func (ucase *usecase) ResetPassword(ctx context.Context, id int, token string) (*models.User, string, error) {
-	log := ucase.logrus.WithField("id", id).WithField("token", token)
-	log.Debug("ResetPassword")
+	entry := ucase.logrus.WithField("id", id).WithField("token", token)
+	entry.Debug("ResetPassword")
 	u, err := ucase.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, "", err
@@ -125,6 +142,16 @@ func (ucase *usecase) ResetPassword(ctx context.Context, id int, token string) (
 		}
 		return u, pswd, nil
 	}
-	log.Debug("Wrong reset password token")
+	entry.Debug("ResetPassword - Wrong reset password token")
 	return u, "", _errors.Wrap(_errors.ErrWrongResetPasswordToken)
+}
+
+func isProperInterval(a, b time.Time, interval int) bool {
+	year, month, day, hour, min, _ := utils.DateDifference(a, b)
+	logrus.Debug("isProperInterval", year, month, day, hour, min, interval)
+	return year != 0 ||
+		month != 0 ||
+		day != 0 ||
+		hour != 0 ||
+		min >= interval
 }

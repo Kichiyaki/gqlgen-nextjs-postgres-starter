@@ -1,0 +1,25 @@
+{
+  "application": {
+    "name": "gqlgen-nextjs-postgres-starter",
+    "address": ":1234",
+    "frontend": "http://localhost:3000",
+    "debug": true,
+    "intervalBetweenTokensGeneration": 5
+  },
+  "db": {
+    "user": "postgres",
+    "password": "",
+    "addr": "localhost:5432",
+    "name": "gqlgen_nextjs_postgres_starter"
+  },
+  "session": {
+    "secret": "sessionSecret"
+  },
+  "email": {
+    "host": "emailHost",
+    "port": 587,
+    "username": "emailUsername",
+    "password": "emailPassword",
+    "address": "its for 'From' email header"
+  }
+}

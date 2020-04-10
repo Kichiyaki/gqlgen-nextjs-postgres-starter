@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardContent,
   Button,
-  Snackbar
+  Snackbar,
 } from '@material-ui/core';
 import { Alert } from '@material-ui/lab';
 import AppLayout from '@common/AppLayout/AppLayout';
@@ -24,17 +24,15 @@ function AccountPage() {
   const user = data && data.me ? data.me : {};
   const [
     generateNewActivationTokenMutation,
-    { loading: generateNewActivationTokenLoading }
-  ] = useMutation(GENERATE_NEW_ACTIVATION_TOKEN_MUTATION, {
-    ignoreResults: true
-  });
+    { loading: generateNewActivationTokenLoading },
+  ] = useMutation(GENERATE_NEW_ACTIVATION_TOKEN_MUTATION, {});
   const { t } = useTranslation(USER_PAGE.SETTINGS_PAGE.ACCOUNT_PAGE);
   const {
     snackbarProps,
     alertProps,
     message,
     setMessage,
-    setSeverity
+    setSeverity,
   } = useSnackbar();
 
   const handleNewActivationTokenGeneration = async () => {
@@ -84,7 +82,7 @@ function AccountPage() {
 
 AccountPage.getInitialProps = () => {
   return {
-    namespacesRequired: [COMMON, USER_PAGE.SETTINGS_PAGE.ACCOUNT_PAGE]
+    namespacesRequired: [COMMON, USER_PAGE.SETTINGS_PAGE.ACCOUNT_PAGE],
   };
 };
 

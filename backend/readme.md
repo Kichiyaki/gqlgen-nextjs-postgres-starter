@@ -24,7 +24,7 @@ Remember to create config.json file!
     "port": 587,
     "username": "emailaccountusername",
     "password": "emailaccountpassword",
-    "address": "its for From email header"
+    "address": "its for 'From' email header"
   }
 }
 ```

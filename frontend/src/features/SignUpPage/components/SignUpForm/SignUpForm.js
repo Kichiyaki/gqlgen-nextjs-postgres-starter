@@ -13,7 +13,7 @@ import {
   MINIMUM_PASSWORD_LENGTH,
   CONTAIN_UPPERCASE,
   CONTAIN_DIGIT,
-  CONTAIN_LOWERCASE
+  CONTAIN_LOWERCASE,
 } from '@config/sign-up-policy';
 import { INPUT_IDS, PROPS_TO_SEND, SIGN_UP_MUTATION } from './constants';
 import { SIGN_UP_PAGE } from '@config/namespaces';
@@ -29,24 +29,24 @@ import {
   CardActions,
   TextField,
   Button,
-  Typography
+  Typography,
 } from '@material-ui/core';
 import Link from '@common/Link/Link';
 
 const useStyles = makeStyles(() => ({
   actions: {
-    justifyContent: 'flex-end'
-  }
+    justifyContent: 'flex-end',
+  },
 }));
 
-export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
+export default function SignUpForm({ setMessage, setSeverity }) {
   const classes = useStyles();
   const { t } = useTranslation(SIGN_UP_PAGE);
   usePrompt('?');
   const [signUp] = useMutation(SIGN_UP_MUTATION, {
     ignoreResults: true,
     awaitRefetchQueries: true,
-    refetchQueries: [{ query: ME }]
+    refetchQueries: [{ query: ME }],
   });
 
   const {
@@ -56,13 +56,13 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
     touched,
     errors,
     handleSubmit,
-    isSubmitting
+    isSubmitting,
   } = useFormik({
     initialValues: {
       login: '',
       password: '',
       confirmPassword: '',
-      email: ''
+      email: '',
     },
     onSubmit: async (user, { setSubmitting }) => {
       try {
@@ -83,13 +83,13 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
         .min(
           MINIMUM_LOGIN_LENGTH,
           t('signUpForm.errors.validation.minimumLoginLength', {
-            count: MINIMUM_LOGIN_LENGTH
+            count: MINIMUM_LOGIN_LENGTH,
           })
         )
         .max(
           MAXIMUM_LOGIN_LENGTH,
           t('signUpForm.errors.validation.maximumLoginLength', {
-            count: MAXIMUM_LOGIN_LENGTH
+            count: MAXIMUM_LOGIN_LENGTH,
           })
         )
         .required(t('signUpForm.errors.validation.mustProvideLogin')),
@@ -99,13 +99,13 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
         .min(
           MINIMUM_PASSWORD_LENGTH,
           t('signUpForm.errors.validation.minimumPasswordLength', {
-            count: MINIMUM_PASSWORD_LENGTH
+            count: MINIMUM_PASSWORD_LENGTH,
           })
         )
         .max(
           MAXIMUM_PASSWORD_LENGTH,
           t('signUpForm.errors.validation.maximumPasswordLength', {
-            count: MAXIMUM_PASSWORD_LENGTH
+            count: MAXIMUM_PASSWORD_LENGTH,
           })
         )
         .matches(
@@ -133,8 +133,8 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
           [Yup.ref('password'), null],
           t('signUpForm.errors.validation.passwordsAreNotTheSame')
         )
-        .required(t('signUpForm.errors.validation.mustProvidePassword'))
-    })
+        .required(t('signUpForm.errors.validation.mustProvidePassword')),
+    }),
   });
 
   const defaultInputProps = {
@@ -143,7 +143,7 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
     required: true,
     fullWidth: true,
     onBlur: handleBlur,
-    onChange: handleChange
+    onChange: handleChange,
   };
 
   return (
@@ -193,14 +193,6 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
             {t('signUpForm.alreadyHaveAnAccount')}
           </Link>
         </Typography>
-        <Typography
-          style={{ cursor: 'pointer' }}
-          onClick={showDialog}
-          component="p"
-          color="secondary"
-        >
-          {t('signUpForm.forgotPassword')}
-        </Typography>
       </CardContent>
       <CardActions disableSpacing className={classes.actions}>
         <Button onClick={handleSubmit} disabled={isSubmitting}>
@@ -210,7 +202,3 @@ export default function SignUpForm({ setMessage, setSeverity, showDialog }) {
     </Card>
   );
 }
-
-SignUpForm.propTypes = {
-  showDialog: func.isRequired
-};

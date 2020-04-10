@@ -1,11 +1,16 @@
 {
   "global.internalServerError": "Internal server error.",
   "global.unauthorizedError": "Unauthorized.",
+
   "auth.mustBeLoggedInError": "You must be logged in to finish this request.",
   "auth.mustBeLoggedOutError": "You must be logged out to finish this request.",
   "auth.mustHaveActivatedAccountError": "You must have activated the account to finish this request.",
   "auth.wrongActivationTokenError": "Wrong activation token.",
   "auth.wrongResetPasswordTokenError": "Wrong reset password token.",
+  "auth.accountIsActivatedError": "Account is activated.",
+  "auth.activationTokenHasBeenGeneratedRecentlyError": "Activation token has been generated recently. Wait some time.",
+  "auth.resetPasswordTokenHasBeenGeneratedRecentlyError": "Reset password token has been generated recently. Wait some time.",
+
   "user.notFoundError": "User not found.",
   "user.invalidCredentialsError": "Invalid credentials.",
   "user.loginMustBeUniqueError": "Login must be unique.",
@@ -15,6 +20,7 @@
   "user.passwordPolicyError": "Password length should be between {{.MinLength}} and {{.MaxLength}} characters and include at least one uppercase, lowercase and number.",
   "user.emailPolicyError": "Wrong email address.",
   "user.invalidUserRoleError": "Invalid user role. It should be 2 for administrators or 1 for normal users.",
+
   "activateAccountEmailTitle": "Account activation",
   "activateAccountEmailContent": "Hello {{.Login}}! <a href=\"{{.Href}}\">activate account</a>.",
   "resetPasswordEmailTitle": "Reset password",
