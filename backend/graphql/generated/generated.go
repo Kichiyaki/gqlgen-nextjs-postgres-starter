@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"time"
@@ -40,6 +41,9 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	Activated     func(ctx context.Context, obj interface{}, next graphql.Resolver, yes bool) (res interface{}, err error)
+	Authenticated func(ctx context.Context, obj interface{}, next graphql.Resolver, yes bool) (res interface{}, err error)
+	HasRole       func(ctx context.Context, obj interface{}, next graphql.Resolver, role int) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
@@ -325,11 +329,17 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	&ast.Source{Name: "schema/directives.graphql", Input: `directive @hasRole(role: Int!) on FIELD_DEFINITION
+directive @authenticated(yes: Boolean!) on FIELD_DEFINITION
+directive @activated(yes: Boolean!) on FIELD_DEFINITION
+`, BuiltIn: false},
 	&ast.Source{Name: "schema/mutation.graphql", Input: `type Mutation {
-  signup(user: UserInput!): User
-  signin(login: String!, password: String!): User
-  signout: String
+  signup(user: UserInput!): User @authenticated(yes: false)
+  signin(login: String!, password: String!): User @authenticated(yes: false)
+  signout: String @authenticated(yes: true)
   generateNewActivationTokenForMe: String
+    @authenticated(yes: true)
+    @activated(yes: false)
   generateNewResetPasswordToken(email: String!): String
 }
 `, BuiltIn: false},
@@ -398,6 +408,48 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) dir_activated_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 bool
+	if tmp, ok := rawArgs["yes"]; ok {
+		arg0, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["yes"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) dir_authenticated_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 bool
+	if tmp, ok := rawArgs["yes"]; ok {
+		arg0, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["yes"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["role"]; ok {
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["role"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_generateNewResetPasswordToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -566,8 +618,32 @@ func (ec *executionContext) _Mutation_signup(ctx context.Context, field graphql.
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Signup(rctx, args["user"].(models.UserInput))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Signup(rctx, args["user"].(models.UserInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			yes, err := ec.unmarshalNBoolean2bool(ctx, false)
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0, yes)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *backend/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -604,8 +680,32 @@ func (ec *executionContext) _Mutation_signin(ctx context.Context, field graphql.
 	}
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Signin(rctx, args["login"].(string), args["password"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Signin(rctx, args["login"].(string), args["password"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			yes, err := ec.unmarshalNBoolean2bool(ctx, false)
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0, yes)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*models.User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *backend/models.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -635,8 +735,32 @@ func (ec *executionContext) _Mutation_signout(ctx context.Context, field graphql
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Signout(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Signout(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			yes, err := ec.unmarshalNBoolean2bool(ctx, true)
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0, yes)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -666,8 +790,42 @@ func (ec *executionContext) _Mutation_generateNewActivationTokenForMe(ctx contex
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().GenerateNewActivationTokenForMe(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().GenerateNewActivationTokenForMe(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			yes, err := ec.unmarshalNBoolean2bool(ctx, true)
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0, yes)
+		}
+		directive2 := func(ctx context.Context) (interface{}, error) {
+			yes, err := ec.unmarshalNBoolean2bool(ctx, false)
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.Activated == nil {
+				return nil, errors.New("directive activated is not implemented")
+			}
+			return ec.directives.Activated(ctx, nil, directive1, yes)
+		}
+
+		tmp, err := directive2(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -1,6 +1,7 @@
 package http
 
 import (
+	"backend/graphql/directives"
 	"backend/graphql/generated"
 	"backend/graphql/resolvers"
 	"fmt"
@@ -23,7 +24,12 @@ func NewGraphqlHandler(g *echo.Group, r *resolvers.Resolver) error {
 func graphqlHandler(r *resolvers.Resolver) echo.HandlerFunc {
 	// NewExecutableSchema and Config are in the generated.go file
 	// Resolver is in the resolver.go file
-	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: r}))
+	directivesHandler := &directives.Handler{}
+	cfg := generated.Config{Resolvers: r}
+	cfg.Directives.Activated = directivesHandler.Activated
+	cfg.Directives.HasRole = directivesHandler.HasRole
+	cfg.Directives.Authenticated = directivesHandler.Authenticated
+	h := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
 
 	return func(c echo.Context) error {
 		h.ServeHTTP(c.Response(), c.Request())

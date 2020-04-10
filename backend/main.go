@@ -112,7 +112,7 @@ func main() {
 	e.Use(_middleware.Logger())
 	e.Use(_middleware.EchoContextToContext())
 	e.Use(_middleware.LocalizerToContext())
-	e.Use(_middleware.Authorize(userRepo))
+	e.Use(_middleware.Authenticate(userRepo))
 	g := e.Group("")
 	http.NewGraphqlHandler(g, &resolvers.Resolver{
 		FrontendURL: viper.GetString("application.frontend"),

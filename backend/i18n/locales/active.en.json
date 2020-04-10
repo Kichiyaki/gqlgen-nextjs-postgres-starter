@@ -1,11 +1,12 @@
 {
   "global.internalServerError": "Internal server error.",
   "global.unauthorizedError": "Unauthorized.",
-  "global.tokenExpiredError": "Token expired",
+  "global.tokenExpiredError": "Token expired.",
 
   "auth.mustBeLoggedInError": "You must be logged in to finish this request.",
   "auth.mustBeLoggedOutError": "You must be logged out to finish this request.",
-  "auth.mustHaveActivatedAccountError": "You must have activated the account to finish this request.",
+  "auth.mustHaveActivatedAccountError": "You must have a activated account to finish this request.",
+  "auth.mustHaveDeactivatedAccountError": "You must have a deactivated account to finish this request.",
   "auth.wrongActivationTokenError": "Wrong activation token.",
   "auth.wrongResetPasswordTokenError": "Wrong reset password token.",
   "auth.accountIsActivatedError": "Account is activated.",

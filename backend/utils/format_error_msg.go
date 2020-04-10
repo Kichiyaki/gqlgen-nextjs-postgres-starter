@@ -1,4 +1,4 @@
-package resolvers
+package utils
 
 import (
 	"backend/errors"
@@ -9,7 +9,7 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 )
 
-func formatErrorMsg(ctx context.Context, err2 error) error {
+func FormatErrorMsg(ctx context.Context, err2 error) error {
 	localizer, err := middleware.LocalizerFromContext(ctx)
 	if err != nil {
 		return err

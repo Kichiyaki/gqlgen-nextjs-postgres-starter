@@ -5,6 +5,7 @@ import (
 	"backend/errors"
 	"backend/middleware"
 	"backend/models"
+	"backend/utils"
 	"context"
 	"fmt"
 
@@ -21,22 +22,18 @@ const (
 )
 
 func (r *mutationResolver) Signup(ctx context.Context, input models.UserInput) (*models.User, error) {
-	if _, err := middleware.UserFromContext(ctx); err == nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrMustBeLoggedOut))
-	}
-
 	user, err := r.AuthUcase.Signup(ctx, input)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 
 	echoCtx, err := middleware.EchoContextFromContext(ctx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess, err := session.Get(auth.SessionName, echoCtx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess.Values["login"] = user.Login
 	sess.Values["password"] = input.Password
@@ -56,22 +53,18 @@ func (r *mutationResolver) Signup(ctx context.Context, input models.UserInput) (
 }
 
 func (r *mutationResolver) Signin(ctx context.Context, login string, password string) (*models.User, error) {
-	if _, err := middleware.UserFromContext(ctx); err == nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrMustBeLoggedOut))
-	}
-
 	user, err := r.AuthUcase.Signin(ctx, login, password)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 
 	echoCtx, err := middleware.EchoContextFromContext(ctx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess, err := session.Get(auth.SessionName, echoCtx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess.Values["login"] = login
 	sess.Values["password"] = password
@@ -82,11 +75,11 @@ func (r *mutationResolver) Signin(ctx context.Context, login string, password st
 func (r *mutationResolver) Signout(ctx context.Context) (*string, error) {
 	echoCtx, err := middleware.EchoContextFromContext(ctx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess, err := session.Get(auth.SessionName, echoCtx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	delete(sess.Values, "login")
 	delete(sess.Values, "password")
@@ -98,11 +91,11 @@ func (r *mutationResolver) Signout(ctx context.Context) (*string, error) {
 func (r *mutationResolver) GenerateNewActivationTokenForMe(ctx context.Context) (*string, error) {
 	user, err := middleware.UserFromContext(ctx)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, errors.Wrap(errors.ErrMustBeLoggedIn))
+		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrMustBeLoggedIn, err))
 	}
 	user, err = r.AuthUcase.GenerateNewActivationToken(ctx, user.ID)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 	go func() {
 		sendEmail(ctx,
@@ -121,7 +114,7 @@ func (r *mutationResolver) GenerateNewActivationTokenForMe(ctx context.Context) 
 func (r *mutationResolver) GenerateNewResetPasswordToken(ctx context.Context, email string) (*string, error) {
 	user, err := r.AuthUcase.GenerateNewResetPasswordToken(ctx, email)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 	go func() {
 		sendEmail(ctx,
@@ -145,7 +138,7 @@ func (r *queryResolver) Me(ctx context.Context) (*models.User, error) {
 func (r *queryResolver) ActivateUserAccount(ctx context.Context, id int, token string) (*models.User, error) {
 	user, err := r.AuthUcase.Activate(ctx, id, token)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 	return user, nil
 }
@@ -153,7 +146,7 @@ func (r *queryResolver) ActivateUserAccount(ctx context.Context, id int, token s
 func (r *queryResolver) ResetUserPassword(ctx context.Context, id int, token string) (*string, error) {
 	user, password, err := r.AuthUcase.ResetPassword(ctx, id, token)
 	if err != nil {
-		return nil, formatErrorMsg(ctx, err)
+		return nil, utils.FormatErrorMsg(ctx, err)
 	}
 	go func() {
 		sendEmail(ctx,

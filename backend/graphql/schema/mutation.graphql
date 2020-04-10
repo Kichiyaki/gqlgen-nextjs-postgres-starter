@@ -1,7 +1,9 @@
 type Mutation {
-  signup(user: UserInput!): User
-  signin(login: String!, password: String!): User
-  signout: String
+  signup(user: UserInput!): User @authenticated(yes: false)
+  signin(login: String!, password: String!): User @authenticated(yes: false)
+  signout: String @authenticated(yes: true)
   generateNewActivationTokenForMe: String
+    @authenticated(yes: true)
+    @activated(yes: false)
   generateNewResetPasswordToken(email: String!): String
 }

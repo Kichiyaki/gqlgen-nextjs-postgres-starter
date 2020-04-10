@@ -1,0 +1,3 @@
+directive @hasRole(role: Int!) on FIELD_DEFINITION
+directive @authenticated(yes: Boolean!) on FIELD_DEFINITION
+directive @activated(yes: Boolean!) on FIELD_DEFINITION

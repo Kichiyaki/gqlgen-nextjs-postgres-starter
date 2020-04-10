@@ -13,7 +13,7 @@ import (
 
 var userContextKey contextKey = "user_ctx_key"
 
-func Authorize(repo user.Repository) echo.MiddlewareFunc {
+func Authenticate(repo user.Repository) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			sess, _ := session.Get(auth.SessionName, c)
