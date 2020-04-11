@@ -17,9 +17,9 @@ func (h *Handler) Activated(ctx context.Context, obj interface{}, next graphql.R
 	if err != nil {
 		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrMustBeLoggedIn, err))
 	}
-	if yes && !user.Activated {
+	if yes && (user.Activated == nil || !*user.Activated) {
 		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrMustHaveActivatedAccount))
-	} else if !yes && user.Activated {
+	} else if !yes && user.Activated != nil && *user.Activated {
 		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrMustHaveDeactivatedAccount))
 	}
 

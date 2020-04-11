@@ -8,7 +8,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	_errors "backend/errors"
-	"backend/middleware"
 	"backend/models"
 	"backend/postgres"
 
@@ -138,9 +137,8 @@ func (repo *postgreRepository) Update(ctx context.Context, u *models.User) error
 	if _, err := repo.
 		Model(u).
 		WherePK().
-		Apply(middleware.UpdateNotZero).
 		Returning("*").
-		Update(); err != nil {
+		UpdateNotZero(); err != nil {
 		log.Debugf("Update err: %s", err.Error())
 		if err == pg.ErrNoRows {
 			return _errors.Wrap(_errors.ErrUserNotFound, err)

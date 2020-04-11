@@ -56,7 +56,8 @@ func (ucase *usecase) Signup(ctx context.Context, input models.UserInput) (*mode
 	}
 	u := input.ToUser()
 	u.Role = models.UserDefaultRole
-	u.Activated = false
+	activated := false
+	u.Activated = &activated
 	u.ActivationToken = uuid.New().String()
 	cfg := validation.NewConfig()
 	if err := cfg.Validate(u); err != nil {
@@ -81,7 +82,7 @@ func (ucase *usecase) GenerateNewActivationToken(ctx context.Context, id int) (*
 	u, err := ucase.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
-	} else if u.Activated {
+	} else if u.Activated != nil && *u.Activated {
 		entry.Debug("GenerateNewActivationToken - The account is activated.")
 		return nil, _errors.Wrap(_errors.ErrAccountIsActivated)
 	} else if isProperInterval(now, u.ActivationTokenGeneratedAt, ucase.intervalBetweenTokensGeneration) {
@@ -99,12 +100,13 @@ func (ucase *usecase) Activate(ctx context.Context, id int, token string) (*mode
 	u, err := ucase.userRepo.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
-	} else if u.Activated {
+	} else if u.Activated != nil && *u.Activated {
 		entry.Debug("The account is activated.")
 		return nil, _errors.Wrap(_errors.ErrUnauthorized)
 	}
 	if u.ActivationToken == token {
-		u.Activated = true
+		activated := true
+		u.Activated = &activated
 		if err := ucase.userRepo.Update(ctx, u); err != nil {
 			return nil, err
 		}

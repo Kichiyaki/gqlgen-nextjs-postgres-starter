@@ -81,7 +81,7 @@ func (ucase *usecase) Store(ctx context.Context, input models.UserInput) (*model
 		entry.Debugf("Store - Validation error: %s", err.Error())
 		return nil, err
 	}
-	if err := ucase.userRepo.Update(ctx, &user); err != nil {
+	if err := ucase.userRepo.Store(ctx, &user); err != nil {
 		return nil, err
 	}
 	return &user, nil

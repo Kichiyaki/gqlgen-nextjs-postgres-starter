@@ -15,17 +15,17 @@ const (
 )
 
 type User struct {
-	tableName struct{} `pg:"alias:u"`
+	tableName struct{} `pg:"alias:user"`
 
 	ID                            int       `json:"id,omitempty" pg:",pk"`
-	Slug                          string    `json:"slug,omitempty" pg:",unique,use_zero"`
+	Slug                          string    `json:"slug,omitempty" pg:",unique"`
 	Login                         string    `json:"login,omitempty" pg:",unique,use_zero"`
 	Password                      string    `json:"-,omitempty" gqlgen:"-"`
 	Email                         string    `json:"email,omitempty" pg:",unique"`
 	CreatedAt                     time.Time `json:"createdAt,omitempty" pg:"default:now()"`
 	UpdatedAt                     time.Time `json:"updatedAt,omitempty" pg:"default:now()"`
 	Role                          int       `json:"role,omitempty"`
-	Activated                     bool      `json:"activated,omitempty" pg:"default:false,use_zero"`
+	Activated                     *bool     `json:"activated,omitempty" pg:"default:false,use_zero"`
 	ActivationToken               string    `json:"-" gqlgen:"-"`
 	ActivationTokenGeneratedAt    time.Time `json:"-" gqlgen:"-" pg:"default:now()"`
 	ResetPasswordToken            string    `json:"-" gqlgen:"-"`
@@ -50,7 +50,7 @@ func (u *User) MergeInput(input UserInput) {
 		u.Role = input.Role
 	}
 	if input.Activated != nil {
-		u.Activated = *input.Activated
+		u.Activated = input.Activated
 	}
 }
 
@@ -97,13 +97,13 @@ func (input UserInput) ToUser() User {
 		Role:     input.Role,
 	}
 	if input.Activated != nil {
-		u.Activated = *input.Activated
+		u.Activated = input.Activated
 	}
 	return u
 }
 
 type UserFilter struct {
-	tableName struct{} `urlstruct:"u"`
+	tableName struct{} `urlstruct:"user"`
 
 	ID          []int     `gqlgen:"id"`
 	IdNEQ       []int     `gqlgen:"idNeq"`
@@ -124,4 +124,9 @@ type UserFilter struct {
 	Offset      int       `urlstruct:",nowhere"`
 	Limit       int       `urlstruct:",nowhere"`
 	Order       []string  `urlstruct:",nowhere"`
+}
+
+type UserList struct {
+	Total int     `json:"total"`
+	Items []*User `json:"items"`
 }
