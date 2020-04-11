@@ -2,7 +2,6 @@ type User {
   id: Int!
   slug: String!
   login: String!
-  displayName: String!
   role: Int!
   email: String!
   activated: Boolean!
@@ -17,7 +16,6 @@ type UserList {
 
 input UserInput {
   login: String
-  displayName: String
   password: String
   email: String
   role: Int
@@ -30,9 +28,6 @@ input UserFilter {
   login: [String!]
   loginNeq: [String!]
   loginMatch: String
-  displayName: [String!]
-  displayNameNeq: [String!]
-  displayNameMatch: String
   email: [String!]
   emailNeq: [String!]
   emailMatch: String

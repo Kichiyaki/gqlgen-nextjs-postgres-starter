@@ -2,6 +2,8 @@
   "global.internalServerError": "Internal server error.",
   "global.unauthorizedError": "Unauthorized.",
   "global.tokenExpiredError": "Token expired.",
+  "global.registrationDisabledError": "Registration disabled.",
+  "global.invalidPayloadError": "Invalid payload.",
 
   "auth.mustBeLoggedInError": "You must be logged in to finish this request.",
   "auth.mustBeLoggedOutError": "You must be logged out to finish this request.",

@@ -30,6 +30,7 @@ func Authenticate(repo user.Repository) echo.MiddlewareFunc {
 		}
 	}
 }
+
 func StoreUserInContext(ctx context.Context, u *models.User) context.Context {
 	return context.WithValue(ctx, userContextKey, u)
 }

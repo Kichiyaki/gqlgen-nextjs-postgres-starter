@@ -9,6 +9,7 @@ import (
 	_middleware "backend/middleware"
 	"backend/postgres"
 	_userRepository "backend/user/repository"
+	_userUsecase "backend/user/usecase"
 	"context"
 	"os"
 	"os/signal"
@@ -87,8 +88,8 @@ func main() {
 	userRepo, err := _userRepository.NewPostgreUserRepository(dbConn)
 	if err != nil {
 		logrus.Fatal(err)
-	}
 
+	}
 	if err := postgres.LoadFunctionsAndTriggers(dbConn); err != nil {
 		logrus.Fatal(err)
 	}
@@ -97,6 +98,11 @@ func main() {
 		UserRepo:                        userRepo,
 		IntervalBetweenTokensGeneration: viper.GetInt("application.intervalBetweenTokensGeneration"),
 		ResetPasswordTokenExpiresIn:     viper.GetInt("application.resetPasswordTokenExpiresIn"),
+		RegistrationDisabled:            viper.GetBool("application.registrationDisabled"),
+	})
+
+	userUcase := _userUsecase.NewUserUsecase(_userUsecase.Config{
+		UserRepo: userRepo,
 	})
 
 	e := echo.New()
@@ -117,6 +123,7 @@ func main() {
 	http.NewGraphqlHandler(g, &resolvers.Resolver{
 		FrontendURL: viper.GetString("application.frontend"),
 		AuthUcase:   authUcase,
+		UserUcase:   userUcase,
 	})
 	go func() {
 		e.Start(viper.GetString("application.address"))

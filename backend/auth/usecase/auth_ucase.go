@@ -21,6 +21,7 @@ type Config struct {
 	PasswordGenerator               password.PasswordGenerator
 	IntervalBetweenTokensGeneration int
 	ResetPasswordTokenExpiresIn     int
+	RegistrationDisabled            bool
 }
 
 type usecase struct {
@@ -29,6 +30,7 @@ type usecase struct {
 	logrus                          *logrus.Entry
 	intervalBetweenTokensGeneration int
 	resetPasswordTokenExpiresIn     int
+	registrationDisabled            bool
 }
 
 func NewAuthUsecase(cfg Config) auth.Usecase {
@@ -41,19 +43,21 @@ func NewAuthUsecase(cfg Config) auth.Usecase {
 		logrus.WithField("package", "auth/usecase"),
 		cfg.IntervalBetweenTokensGeneration,
 		cfg.ResetPasswordTokenExpiresIn,
+		cfg.RegistrationDisabled,
 	}
 }
 
 func (ucase *usecase) Signup(ctx context.Context, input models.UserInput) (*models.User, error) {
-	u := input.ToUser()
-	entry := ucase.logrus.WithField("user", u)
+	entry := ucase.logrus.WithField("input", input)
 	entry.Debug("Signup")
+	if ucase.registrationDisabled {
+		entry.Debug("Signup - registration disabled")
+		return nil, _errors.Wrap(_errors.ErrRegistrationDisabled)
+	}
+	u := input.ToUser()
 	u.Role = models.UserDefaultRole
 	u.Activated = false
 	u.ActivationToken = uuid.New().String()
-	if u.DisplayName == "" {
-		u.DisplayName = u.Login
-	}
 	cfg := validation.NewConfig()
 	if err := cfg.Validate(u); err != nil {
 		entry.Debugf("Signup - Cannot create user: %s", err.Error())

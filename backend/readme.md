@@ -10,6 +10,7 @@ Remember to create config.json file!
     "frontend": "http://localhost:3000",
     "intervalBetweenTokensGeneration": 5,
     "resetPasswordTokenExpiresIn": 5,
+    "registrationDisabled": false,
     "debug": false
   },
   "db": {

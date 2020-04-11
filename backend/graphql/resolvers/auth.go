@@ -44,7 +44,7 @@ func (r *mutationResolver) Signup(ctx context.Context, input models.UserInput) (
 			activateAccountEmailContent,
 			user.Email,
 			map[string]interface{}{
-				"Login": user.DisplayName,
+				"Login": user.Login,
 				"Href":  fmt.Sprintf("%s/%d/activate/%s", r.FrontendURL, user.ID, user.ActivationToken),
 			})
 	}()
@@ -103,7 +103,7 @@ func (r *mutationResolver) GenerateNewActivationTokenForMe(ctx context.Context) 
 			activateAccountEmailContent,
 			user.Email,
 			map[string]interface{}{
-				"Login": user.DisplayName,
+				"Login": user.Login,
 				"Href":  fmt.Sprintf("%s/%d/activate/%s", r.FrontendURL, user.ID, user.ActivationToken),
 			})
 	}()
@@ -122,7 +122,7 @@ func (r *mutationResolver) GenerateNewResetPasswordToken(ctx context.Context, em
 			resetPasswordEmailContent,
 			user.Email,
 			map[string]interface{}{
-				"Login": user.DisplayName,
+				"Login": user.Login,
 				"Href":  fmt.Sprintf("%s/%d/reset-password/%s", r.FrontendURL, user.ID, user.ResetPasswordToken),
 			})
 	}()
@@ -154,7 +154,7 @@ func (r *queryResolver) ResetUserPassword(ctx context.Context, id int, token str
 			passwordChangedEmailContent,
 			user.Email,
 			map[string]interface{}{
-				"Login":    user.DisplayName,
+				"Login":    user.Login,
 				"Password": password,
 			})
 	}()

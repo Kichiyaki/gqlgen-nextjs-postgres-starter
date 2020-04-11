@@ -5,11 +5,13 @@ package resolvers
 import (
 	"backend/auth"
 	"backend/graphql/generated"
+	"backend/user"
 )
 
 type Resolver struct {
 	FrontendURL string
 	AuthUcase   auth.Usecase
+	UserUcase   user.Usecase
 }
 
 // Mutation returns generated.MutationResolver implementation.

@@ -5,7 +5,8 @@
     "frontend": "http://localhost:3000",
     "debug": false,
     "intervalBetweenTokensGeneration": 5,
-    "resetPasswordTokenExpiresIn": 5
+    "resetPasswordTokenExpiresIn": 5,
+    "registrationDisabled": false
   },
   "db": {
     "user": "postgres",

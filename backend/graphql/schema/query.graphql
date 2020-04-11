@@ -2,4 +2,7 @@ type Query {
   me: User
   activateUserAccount(id: Int!, token: String!): User
   resetUserPassword(id: Int!, token: String!): String
+
+  users(filter: UserFilter): UserList!
+  user(id: Int, slug: String): User
 }
