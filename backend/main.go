@@ -1,9 +1,10 @@
 package main
 
 import (
+	"backend/auth"
 	_authUsecase "backend/auth/usecase"
 	"backend/email"
-	"backend/graphql/delivery/http"
+	_graphqlHTTPDelivery "backend/graphql/delivery/http"
 	"backend/graphql/resolvers"
 	"backend/i18n"
 	_middleware "backend/middleware"
@@ -11,11 +12,14 @@ import (
 	_userRepository "backend/user/repository"
 	_userUsecase "backend/user/usecase"
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"path/filepath"
 	"syscall"
 	"time"
+
+	"golang.org/x/text/language"
 
 	"github.com/gorilla/sessions"
 
@@ -62,6 +66,12 @@ func main() {
 		logrus.Fatal(err)
 	}
 
+	//i18n
+	lang, err := language.Parse(viper.GetString("application.defaultLanguage"))
+	if err != nil {
+		logrus.Fatal(err)
+	}
+	i18n.SetDefaultLanguage(lang)
 	localesDir, err := filepath.Abs(filepath.Join(dir, "i18n", "locales"))
 	if err != nil {
 		logrus.Fatal(err)
@@ -109,18 +119,45 @@ func main() {
 	e.HideBanner = true
 	e.HidePort = true
 	e.Use(middleware.Recover())
+
+	//CORS
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins:     []string{viper.GetString("application.frontend")},
+		AllowOrigins:     viper.GetStringSlice("application.cors.allowOrigins"),
 		AllowHeaders:     middleware.DefaultCORSConfig.AllowHeaders,
-		AllowCredentials: true,
+		AllowCredentials: viper.GetBool("application.cors.allowCredentials"),
 	}))
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte(viper.GetString("session.secret")))))
+
+	//Gzip compression
+	e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
+		Level: 5,
+	}))
+
+	//Session
+	store := sessions.NewCookieStore([]byte(viper.GetString("session.secret")))
+	store.Options.Secure = viper.GetBool("session.cookie.secure")
+	store.Options.HttpOnly = viper.GetBool("session.cookie.httpOnly")
+	if sessionName := viper.GetString("session.cookie.sessionName"); sessionName != "" {
+		auth.SessionName = sessionName
+	}
+	if domain := viper.GetString("session.cookie.domain"); domain != "" {
+		store.Options.Domain = domain
+	}
+	if sameSite := viper.GetString("session.cookie.sameSite"); sameSite != "" {
+		store.Options.SameSite = convertToHTTPSameSite(sameSite)
+	}
+	if maxAge := viper.GetInt("session.cookie.maxAge"); maxAge > 0 {
+		store.Options.MaxAge = maxAge
+	}
+	e.Use(session.Middleware(store))
+
 	e.Use(_middleware.Logger())
-	e.Use(_middleware.EchoContextToContext())
-	e.Use(_middleware.LocalizerToContext())
-	e.Use(_middleware.Authenticate(userRepo))
 	g := e.Group("")
-	http.NewGraphqlHandler(g, &resolvers.Resolver{
+	g.Use(middleware.Secure())
+	g.Use(middleware.BodyLimit(viper.GetString("application.bodyLimit")))
+	g.Use(_middleware.EchoContextToContext())
+	g.Use(_middleware.LocalizerToContext())
+	g.Use(_middleware.Authenticate(userRepo))
+	_graphqlHTTPDelivery.NewGraphqlHandler(g, &resolvers.Resolver{
 		FrontendURL: viper.GetString("application.frontend"),
 		AuthUcase:   authUcase,
 		UserUcase:   userUcase,
@@ -139,4 +176,15 @@ func main() {
 	e.Shutdown(ctx)
 	logrus.Info("shutting down")
 	os.Exit(0)
+}
+
+func convertToHTTPSameSite(sameSite string) http.SameSite {
+	switch sameSite {
+	case "lax":
+		return http.SameSiteLaxMode
+	case "strict":
+		return http.SameSiteStrictMode
+	default:
+		return http.SameSiteDefaultMode
+	}
 }

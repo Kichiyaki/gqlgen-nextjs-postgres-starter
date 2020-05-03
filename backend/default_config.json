@@ -6,7 +6,13 @@
     "debug": false,
     "intervalBetweenTokensGeneration": 5,
     "resetPasswordTokenExpiresIn": 5,
-    "registrationDisabled": false
+    "registrationDisabled": false,
+    "cors": {
+      "allowOrigins": ["*"],
+      "allowCredentials": true
+    },
+    "defaultLanguage": "en",
+    "bodyLimit": "12M"
   },
   "db": {
     "user": "postgres",
@@ -15,7 +21,15 @@
     "name": "gqlgen_nextjs_postgres_starter"
   },
   "session": {
-    "secret": "sessionSecret"
+    "secret": "sessionSecret",
+    "cookie": {
+      "sessionName": "starter.sess",
+      "secure": false,
+      "httpOnly": true,
+      "domain": "localhost",
+      "sameSite": "lax or strict",
+      "maxAge": 86400
+    }
   },
   "email": {
     "host": "emailHost",

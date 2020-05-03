@@ -10,6 +10,10 @@ import (
 
 var Bundle = _i18n.NewBundle(language.English)
 
+func SetDefaultLanguage(tag language.Tag) {
+	Bundle = _i18n.NewBundle(tag)
+}
+
 func LoadMessageFiles(root string) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		if path != root {

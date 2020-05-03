@@ -5,7 +5,6 @@ export const ME = gql`
     me {
       id
       login
-      displayName
       role
       activated
       email

@@ -1,5 +1,5 @@
 package auth
 
-const (
+var (
 	SessionName = "app.sess"
 )
