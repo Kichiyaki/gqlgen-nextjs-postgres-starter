@@ -33,7 +33,10 @@ type User struct {
 }
 
 func (u *User) CompareHashAndPassword(password string) error {
-	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil && password != u.Password {
+	if password == u.Password {
+		return nil
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(u.Password), []byte(password)); err != nil {
 		return _errors.Wrap(_errors.ErrInvalidCredentials)
 	}
 	return nil

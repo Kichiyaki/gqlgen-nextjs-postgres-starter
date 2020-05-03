@@ -14,7 +14,7 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/labstack/echo-contrib v0.8.0
 	github.com/labstack/echo/v4 v4.1.16
-	github.com/mitchellh/mapstructure v1.2.2 // indirect
+	github.com/mitchellh/mapstructure v1.3.0 // indirect
 	github.com/nicksnyder/go-i18n/v2 v2.0.3
 	github.com/sethvargo/go-password v0.1.3
 	github.com/sirupsen/logrus v1.5.0

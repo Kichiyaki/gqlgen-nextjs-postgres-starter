@@ -404,7 +404,22 @@ directive @activated(yes: Boolean!) on FIELD_DEFINITION
     @authenticated(yes: true)
     @activated(yes: false)
   generateNewResetPasswordToken(email: String!): String
+}
+`, BuiltIn: false},
+	&ast.Source{Name: "schema/query.graphql", Input: `type Query {
+  me: User
+  activateUserAccount(id: Int!, token: String!): User
+  resetUserPassword(id: Int!, token: String!): String
+}
+`, BuiltIn: false},
+	&ast.Source{Name: "schema/scalars.graphql", Input: `scalar Time
+`, BuiltIn: false},
+	&ast.Source{Name: "schema/user.graphql", Input: `extend type Query {
+  users(filter: UserFilter): UserList!
+  user(id: Int, slug: String): User
+}
 
+extend type Mutation {
   createUser(input: UserInput!): User
     @authenticated(yes: true)
     @hasRole(role: 2)
@@ -413,19 +428,8 @@ directive @activated(yes: Boolean!) on FIELD_DEFINITION
     @hasRole(role: 2)
   deleteUser(ids: [Int!]!): [User!] @authenticated(yes: true) @hasRole(role: 2)
 }
-`, BuiltIn: false},
-	&ast.Source{Name: "schema/query.graphql", Input: `type Query {
-  me: User
-  activateUserAccount(id: Int!, token: String!): User
-  resetUserPassword(id: Int!, token: String!): String
 
-  users(filter: UserFilter): UserList!
-  user(id: Int, slug: String): User
-}
-`, BuiltIn: false},
-	&ast.Source{Name: "schema/scalars.graphql", Input: `scalar Time
-`, BuiltIn: false},
-	&ast.Source{Name: "schema/user.graphql", Input: `type User {
+type User {
   id: Int!
   slug: String!
   login: String!
@@ -1702,9 +1706,9 @@ func (ec *executionContext) _User_activated(ctx context.Context, field graphql.C
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.User) (ret graphql.Marshaler) {
@@ -3549,6 +3553,24 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNBoolean2bool(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast.SelectionSet, v *bool) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec.marshalNBoolean2bool(ctx, sel, *v)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {

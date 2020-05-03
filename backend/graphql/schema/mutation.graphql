@@ -6,12 +6,4 @@ type Mutation {
     @authenticated(yes: true)
     @activated(yes: false)
   generateNewResetPasswordToken(email: String!): String
-
-  createUser(input: UserInput!): User
-    @authenticated(yes: true)
-    @hasRole(role: 2)
-  updateUser(id: Int!, input: UserInput!): User
-    @authenticated(yes: true)
-    @hasRole(role: 2)
-  deleteUser(ids: [Int!]!): [User!] @authenticated(yes: true) @hasRole(role: 2)
 }

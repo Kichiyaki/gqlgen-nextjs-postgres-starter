@@ -36,7 +36,7 @@ func (r *mutationResolver) Signup(ctx context.Context, input models.UserInput) (
 		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
 	sess.Values["login"] = user.Login
-	sess.Values["password"] = input.Password
+	sess.Values["password"] = user.Password
 	sess.Save(echoCtx.Request(), echoCtx.Response())
 	go func() {
 		sendEmail(ctx,
@@ -66,8 +66,8 @@ func (r *mutationResolver) Signin(ctx context.Context, login string, password st
 	if err != nil {
 		return nil, utils.FormatErrorMsg(ctx, errors.Wrap(errors.ErrInternalServerError, err))
 	}
-	sess.Values["login"] = login
-	sess.Values["password"] = password
+	sess.Values["login"] = user.Login
+	sess.Values["password"] = user.Password
 	sess.Save(echoCtx.Request(), echoCtx.Response())
 	return user, nil
 }
