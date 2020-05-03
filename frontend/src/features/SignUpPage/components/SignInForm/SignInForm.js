@@ -5,15 +5,6 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useTranslation } from '@libs/i18n';
 import usePrompt from '@libs/usePrompt';
-import {
-  MAXIMUM_LOGIN_LENGTH,
-  MAXIMUM_PASSWORD_LENGTH,
-  MINIMUM_LOGIN_LENGTH,
-  MINIMUM_PASSWORD_LENGTH,
-  CONTAIN_UPPERCASE,
-  CONTAIN_DIGIT,
-  CONTAIN_LOWERCASE
-} from '@config/sign-up-policy';
 import { INPUT_IDS, SIGN_IN_MUTATION } from './constants';
 import { SIGN_IN_PAGE } from '@config/namespaces';
 import { SIGN_UP_PAGE } from '@config/routes';
@@ -28,14 +19,14 @@ import {
   CardActions,
   TextField,
   Button,
-  Typography
+  Typography,
 } from '@material-ui/core';
 import Link from '@common/Link/Link';
 
 const useStyles = makeStyles(() => ({
   actions: {
-    justifyContent: 'flex-end'
-  }
+    justifyContent: 'flex-end',
+  },
 }));
 
 export default function SignInForm({ showDialog, setMessage, setSeverity }) {
@@ -45,7 +36,7 @@ export default function SignInForm({ showDialog, setMessage, setSeverity }) {
   const [signIn] = useMutation(SIGN_IN_MUTATION, {
     ignoreResults: true,
     awaitRefetchQueries: true,
-    refetchQueries: [{ query: ME }]
+    refetchQueries: [{ query: ME }],
   });
   const {
     values,
@@ -54,11 +45,11 @@ export default function SignInForm({ showDialog, setMessage, setSeverity }) {
     touched,
     errors,
     handleSubmit,
-    isSubmitting
+    isSubmitting,
   } = useFormik({
     initialValues: {
       login: '',
-      password: ''
+      password: '',
     },
     onSubmit: async (credentials, { setSubmitting }) => {
       try {
@@ -76,51 +67,11 @@ export default function SignInForm({ showDialog, setMessage, setSeverity }) {
     validationSchema: Yup.object().shape({
       login: Yup.string()
         .trim()
-        .min(
-          MINIMUM_LOGIN_LENGTH,
-          t('signInForm.errors.validation.minimumLoginLength', {
-            count: MINIMUM_LOGIN_LENGTH
-          })
-        )
-        .max(
-          MAXIMUM_LOGIN_LENGTH,
-          t('signInForm.errors.validation.maximumLoginLength', {
-            count: MAXIMUM_LOGIN_LENGTH
-          })
-        )
         .required(t('signInForm.errors.validation.mustProvideLogin')),
       password: Yup.string()
         .trim()
-        .required(t('signInForm.errors.validation.mustProvidePassword'))
-        .min(
-          MINIMUM_PASSWORD_LENGTH,
-          t('signInForm.errors.validation.minimumPasswordLength', {
-            count: MINIMUM_PASSWORD_LENGTH
-          })
-        )
-        .max(
-          MAXIMUM_PASSWORD_LENGTH,
-          t('signInForm.errors.validation.maximumPasswordLength', {
-            count: MAXIMUM_PASSWORD_LENGTH
-          })
-        )
-        .matches(
-          CONTAIN_UPPERCASE,
-          t(
-            'signInForm.errors.validation.passwordMustContainAtLeastOneUppercase'
-          )
-        )
-        .matches(
-          CONTAIN_LOWERCASE,
-          t(
-            'signInForm.errors.validation.passwordMustContainAtLeastOneLowercase'
-          )
-        )
-        .matches(
-          CONTAIN_DIGIT,
-          t('signInForm.errors.validation.passwordMustContainAtLeastOneDigit')
-        )
-    })
+        .required(t('signInForm.errors.validation.mustProvidePassword')),
+    }),
   });
 
   return (
@@ -178,5 +129,5 @@ export default function SignInForm({ showDialog, setMessage, setSeverity }) {
 }
 
 SignInForm.propTypes = {
-  showDialog: func.isRequired
+  showDialog: func.isRequired,
 };

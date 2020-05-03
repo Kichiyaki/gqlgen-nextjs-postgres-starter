@@ -5,31 +5,46 @@ Remember to create config.json file!
 ```
 {
   "application": {
-    "name": "app name here",
+    "name": "gqlgen-nextjs-postgres-starter",
     "address": ":1234",
     "frontend": "http://localhost:3000",
+    "debug": false,
     "intervalBetweenTokensGeneration": 5,
     "resetPasswordTokenExpiresIn": 5,
     "registrationDisabled": false,
-    "debug": false
+    "cors": {
+      "allowOrigins": ["*"],
+      "allowCredentials": true
+    },
+    "defaultLanguage": "en",
+    "bodyLimit": "12M"
   },
   "db": {
-    "user": "dbUser",
-    "password": "dbPassword",
+    "user": "postgres",
+    "password": "",
     "addr": "localhost:5432",
-    "name": "gqlgen_nextjs_starter"
+    "name": "gqlgen_nextjs_postgres_starter"
   },
   "session": {
-    "secret": "asdd2sdsd13sd"
+    "secret": "sessionSecret",
+    "cookie": {
+      "sessionName": "starter.sess",
+      "secure": false,
+      "httpOnly": true,
+      "domain": "localhost",
+      "sameSite": "lax or strict",
+      "maxAge": 86400
+    }
   },
   "email": {
-    "host": "emailhost",
+    "host": "emailHost",
     "port": 587,
-    "username": "emailaccountusername",
-    "password": "emailaccountpassword",
+    "username": "emailUsername",
+    "password": "emailPassword",
     "address": "its for 'From' email header"
   }
 }
+
 ```
 
 ## Development

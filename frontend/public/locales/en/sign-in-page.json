@@ -4,14 +4,7 @@
     "errors": {
       "validation": {
         "mustProvideLogin": "Login is required.",
-        "mustProvidePassword": "Password is required.",
-        "minimumPasswordLength": "The minimum password length is {{count}}.",
-        "maximumPasswordLength": "The maximum password length is {{count}}.",
-        "minimumLoginLength": "The minimum login length is {{count}}.",
-        "maximumLoginLength": "The maximum login length is {{count}}.",
-        "passwordMustContainAtLeastOneUppercase": "The password must contain at least one uppercase.",
-        "passwordMustContainAtLeastOneLowercase": "Password must contain at least one lowercase.",
-        "passwordMustContainAtLeastOneDigit": "The password must contain at least one digit."
+        "mustProvidePassword": "Password is required."
       },
       "default": "Cannot sign in now, please try later."
     },

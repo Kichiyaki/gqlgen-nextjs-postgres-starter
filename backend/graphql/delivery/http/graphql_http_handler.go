@@ -5,6 +5,7 @@ import (
 	"backend/graphql/generated"
 	"backend/graphql/resolvers"
 	"fmt"
+	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -16,7 +17,9 @@ func NewGraphqlHandler(g *echo.Group, r *resolvers.Resolver) error {
 		return fmt.Errorf("Graphql resolver cannot be nil")
 	}
 	g.POST("/graphql", graphqlHandler(r))
-	g.GET("/playground", playgroundHandler())
+	if os.Getenv("MODE") == "development" {
+		g.GET("/playground", playgroundHandler())
+	}
 	return nil
 }
 
