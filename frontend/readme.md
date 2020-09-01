@@ -13,7 +13,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1. Clone this repository.
 2. Navigate to the right directory.
-3. <b>First, run the backend server!</b> Type "yarn run dev" in your command prompt/terminal or whatever.
+3. <b>First, run the backend server!</b> Type "yarn run dev" in your command prompt/terminal.
 4. App should start.
 
 ## Tech/framework used
